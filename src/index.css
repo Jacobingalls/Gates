@@ -1,13 +1,242 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+html {
+  background: #000;
+  color: #fff;
+  font-family: -apple-system;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.circuit {
+  width: calc(100% - 40px);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  overflow: scroll;
+  
+  background: #22222f;
+  margin: 20px;
+  
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  
+  z-index: 1;
+}
+
+.circuit-inner {
+  display: block;
+  position: relative;
+}
+
+.circuit .row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.circuit .row .button-stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wire {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 3px;
+  fill: none;
+}
+
+.wire.on {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 3px;
+}
+
+.gate {
+  fill: #445;
+  stroke: #99A;
+  stroke-width: 3px;
+}
+
+.led {
+  stroke: #444;
+  stroke-width: 3px;
+  fill: #33333f;
+}
+
+.led.on {
+  stroke: #eee;
+  fill: #fff;
+  box-shadow: 0 0 10px 1px #fff;
+}
+
+
+
+
+.circuit button {
+  display: inline-block;
+  position: relative;
+  
+  padding: 10px;
+  border: 1px solid #888;
+  border-radius: 5px;
+  
+  color: #fff;
+  background: #666;
+  background: linear-gradient(#777, #555);
+  
+  top: -4px;
+  transition: top 0.05s ease-in, background 0.05s ease-in, border-color 0.05s ease-in;
+  
+  user-select: none;
+  cursor: pointer;
+}
+
+.circuit button::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 4px;	
+  left: 0;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  z-index: -1;
+  
+  border: 1px solid #000;
+  border-radius: 5px;
+  
+  background: #333;
+  background: linear-gradient(#000, #333);
+  box-shadow: 0px 4px 10px 1px rgba(0,0,0,.2);
+  
+  transition: top 0.05s ease-in, background 0.05s ease-in, box-shadow 0.05s ease-in;
+}
+
+.circuit button:active {
+  color: #ccc;
+  background: #555;
+  border-color: #111;
+  background: linear-gradient(#555, #777);
+  
+  top: 0;
+}
+
+.circuit button:active::after {
+  top: 0px;
+  background: linear-gradient(#000, #111);
+  box-shadow: 0px 0px 5px 1px rgba(0,0,0,.2);
+}
+
+
+
+.circuit button.blue {
+  border-color: #487bcb;
+  background: linear-gradient(#3a76d4, #1b3a6a);
+}
+
+.circuit button.blue::after {
+  background: linear-gradient(#1e437c, #112646);
+}
+
+.circuit button.blue:active {
+  border-color: #141f31;
+  background: linear-gradient(#1b3a6a, #3a76d4);
+}
+
+.circuit button.blue:active::after {
+  background: linear-gradient(#112646, #1e437c);
+}
+
+
+
+.circuit .switch {
+  position: relative;
+  display: inline-block;
+  
+  width: 60px;
+  height: 35px;
+  border: 1px solid #000;
+  border-radius: 5px;
+  overflow: hidden;
+  
+  background: #333;
+  box-shadow: 0px 4px 10px 1px rgba(0,0,0,.2);
+  
+  user-select: none;
+  cursor: pointer;
+  
+  transition: border 0.1s ease-in, background-color 0.1s ease-in;
+}
+
+.circuit .switch:has(input:checked) {
+  border: 1px solid rgba(255,255,255,.2);
+  background: #556;
+}
+
+.circuit .switch input {
+  display: none;
+}
+
+.circuit .switch .gradient {
+  display: block;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0));
+}
+
+.circuit .slider {
+  display: block;
+  position: absolute;
+  width: calc(60% - 6px);
+  height: calc(100% - 6px);
+  top: 2px;
+  left: 2px;
+  
+  border: 1px solid #999;
+  border-radius: 5px;
+  
+  color: #fff;
+  background: #888;
+  
+  user-select: none;
+  
+  transition: left .1s ease-in;
+  overflow: hidden;
+}
+
+.circuit input:checked + .slider {
+  left: calc(40% + 2px);
+  border: 1px solid #445;
+  background: #CCD;
+}
+
+.circuit .slider .gradient {
+  display: block;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.25));
+}
+
+.circuit .slider .handles {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.circuit .slider .handles .handle {
+  display: block;
+  width: 2px;
+  height: 50%;
+  background: black;
+  opacity: 0.5;
 }
