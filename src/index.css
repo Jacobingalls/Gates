@@ -11,7 +11,6 @@ html {
   justify-content: center;
   position: relative;
   box-sizing: border-box;
-  overflow: scroll;
   
   background: #22222f;
   margin: 20px;
@@ -57,6 +56,12 @@ html {
   stroke-width: 3px;
 }
 
+.gate-line {
+  fill: none;
+  stroke: #99A;
+  stroke-width: 3px;
+}
+
 .led {
   stroke: #444;
   stroke-width: 3px;
@@ -76,7 +81,7 @@ html {
   display: inline-block;
   position: relative;
   
-  padding: 10px;
+  padding: 2px;
   border: 1px solid #888;
   border-radius: 5px;
   
@@ -89,6 +94,10 @@ html {
   
   user-select: none;
   cursor: pointer;
+  
+  font-size: 24px;
+  
+  min-width: 40px;
 }
 
 .circuit button::after {
@@ -111,7 +120,7 @@ html {
   transition: top 0.05s ease-in, background 0.05s ease-in, box-shadow 0.05s ease-in;
 }
 
-.circuit button:active {
+.circuit button:active, .circuit button.pressed {
   color: #ccc;
   background: #555;
   border-color: #111;
@@ -120,7 +129,7 @@ html {
   top: 0;
 }
 
-.circuit button:active::after {
+.circuit button:active::after, .circuit button.pressed::after {
   top: 0px;
   background: linear-gradient(#000, #111);
   box-shadow: 0px 0px 5px 1px rgba(0,0,0,.2);
