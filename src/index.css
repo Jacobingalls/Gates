@@ -2,18 +2,24 @@ html {
   background: #000;
   color: #fff;
   font-family: -apple-system;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
 }
 
 .circuit {
-  width: calc(100% - 40px);
-  display: flex;
+  /* width: 100%; */
+  display: inline-flex;
   flex-direction: row;
   justify-content: center;
   position: relative;
   box-sizing: border-box;
   
   background: #22222f;
-  margin: 20px;
+  padding: 5px 10px;
   
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
@@ -37,6 +43,24 @@ html {
   display: inline-flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.circuit text {
+  fill: #99A;
+}
+
+.circuit text.on {
+  fill: #DDE;
+}
+
+.circuit .text-line {
+  stroke: #99A;
+  stroke-width: 1px;
+  fill: none;
+}
+
+.circuit .text-line.on {
+  stroke: #DDE;
 }
 
 .wire {
@@ -249,3 +273,114 @@ html {
   background: black;
   opacity: 0.5;
 }
+
+.lesson {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  
+  margin-top: 40px;
+  margin-bottom: 100px;
+}
+
+.section {
+  background: #111;
+  padding: 10px;
+  border-radius: 20px;
+  margin: 10px;
+  
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.section .header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+  margin-bottom: 10px;
+  padding: 10px;
+  color: rgba(255, 255, 255, .5);
+}
+
+.section .header  h1 {
+  margin: 0;
+  padding: 0;
+  margin-block: 0;
+  margin-inline: 0;
+  font-size: 1.5em;
+  color: #fff;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  margin: 10px;
+}
+
+.segmented {
+  background: rgba(255, 255, 255, .1);
+  padding: 0;
+  display: inline-block;
+  border-radius: 10px;
+  margin: 0;
+}
+
+.segmented button {
+  margin: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0);
+  border: none;
+  border-radius: 5px;
+  color: #ccd;
+}
+
+.segmented button.active {
+  background: rgba(200, 200, 255, 0.25);
+  color: #eef;
+}
+
+table {
+  /* border: 1px solid #fff; */
+  border-collapse: collapse;
+}
+
+table td, table th {
+  padding: 5px 10px;
+}
+
+table td {
+  color: #99A;
+}
+
+table tr.on td {
+  color: #fff;
+  background: #334;
+}
+
+table th {
+  border-bottom: 3px solid #889;
+}
+
+table td {
+  border-bottom: 1px solid #556;
+}
+
+table tr:last-child td {
+  border-bottom: none;
+}
+
+table th.lastInput, table td.lastInput {
+  border-right: 3px solid #889;
+  padding-right: 13px;
+}
+
+
+
+
+
+

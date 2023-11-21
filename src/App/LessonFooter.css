@@ -1,0 +1,29 @@
+.lesson-footer {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: middle;
+	
+	width: 100%;
+	max-width: 920px;
+	margin: 0 auto;
+	padding: 20px;
+}
+
+.lesson-footer a.arrow {
+	display: block;
+	position: relative;
+	padding: 20px;
+	background: #556;
+	color: #fff;
+	text-decoration: none;
+	
+	padding-left: 30px;
+	clip-path: polygon(20px 0%, 100% 0%, 100% 100%, 20px 100%, 0% 50%);
+}
+
+.lesson-footer a.arrow.right {
+	padding: 20px;
+	padding-right: 30px;
+	clip-path: polygon(0% 0%, calc(100% - 20px) 0%, 100% 50%, calc(100% - 20px) 100%, 0% 100%);
+}
