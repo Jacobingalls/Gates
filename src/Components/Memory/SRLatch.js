@@ -23,12 +23,12 @@ export const SRLatch = ({x, y, s, r, setQ, setNotQ}) => {
 			setRealQ(false);
 			setRealNotQ(true);
 		}
-	}, [s, r]);
+	}, [s, r, realQ, realNotQ]);
 	
 	useEffect(() => {
 		setQ(realQ);
 		setNotQ(realNotQ);
-	}, [realQ, realNotQ]);
+	}, [realQ, realNotQ, setQ, setNotQ]);
 	
 	return <Block title="SR Latch" x={x} y={y} width={100} height={80}>
 		<BlockLabel x={10} y={25} on={s}>S</BlockLabel>

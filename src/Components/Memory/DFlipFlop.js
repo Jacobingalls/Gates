@@ -16,7 +16,7 @@ export const DFlipFlop = ({x, y, d, clk, setQ}) => {
 			setCurrentQ(nextQ)
 			setQ(nextQ)
 		}
-	}, [d, clk]);
+	}, [d, clk, nextQ, setQ]);
 	
 	return <Block title="D Flip-Flop" x={x} y={y} width={100} height={80}>
 		<BlockLabel x={10} y={25} on={d}>D</BlockLabel>

@@ -8,7 +8,7 @@ export const MomentaryButton = ({x, y, output, title, keyboard, position}) => {
   
   useEffect(() => {
 	output(btnPress)
-  }, [btnPress]);
+  }, [btnPress, output]);
   
   return <button 
 	onMouseDown={() => {output(true);}}

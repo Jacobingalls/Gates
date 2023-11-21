@@ -16,7 +16,7 @@ export const DLatch = ({x, y, d, en, setQ}) => {
 	
 	useEffect(() => {
 		setQ(realQ);
-	}, [realQ]);
+	}, [realQ, setQ]);
 	
 	return <Block title="D Latch" x={x} y={y} width={100} height={80}>
 		<BlockLabel x={10} y={25} on={d}>D</BlockLabel>

@@ -4,7 +4,7 @@ export const NotGate = ({x, y, input, output}) => {
 	
 	useEffect(() => {
 	  output(input !== true);
-	}, [input]);
+	}, [input, output]);
   
 	return <g transform={`translate(${x},${y})`}>
 		{<path 

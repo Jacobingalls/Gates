@@ -4,7 +4,7 @@ export const XorGate = ({x, y, input1, input2, output}) => {
 	
 	useEffect(() => {
 	  output((input1 === true) !== (input2 === true));
-	}, [input1, input2]);
+	}, [input1, input2, output]);
   
 	return <g transform={`translate(${x},${y})`}>
 		<path 
@@ -36,7 +36,7 @@ export const XnorGate = ({x, y, input1, input2, output}) => {
 	
 	useEffect(() => {
 	  output((input1 === true) === (input2 === true));
-	}, [input1, input2]);
+	}, [input1, input2, output]);
   
 	return <g transform={`translate(${x},${y})`}>
 		<path 

@@ -1,6 +1,6 @@
 import {useState, useEffect} from "react";
 
-import { Block, BlockLabel, InvertedBlockLabel } from "../Block"
+import { Block, BlockLabel } from "../Block"
 
 export const EightBitShiftRegister = ({x, y, d, clk, setQ0, setQ1, setQ2, setQ3, setQ4, setQ5, setQ6, setQ7}) => {
 	
@@ -26,7 +26,7 @@ export const EightBitShiftRegister = ({x, y, d, clk, setQ0, setQ1, setQ2, setQ3,
 			
 			setHasSetState(true)
 		}
-	}, [d, clk, hasSetState]);
+	}, [d, clk, hasSetState, setQ0, setQ1, setQ2, setQ3, setQ4, setQ5, setQ6, setQ7, currentState, nextState]);
 	
 	const outs = currentState.map((state, i) => {
 		return <BlockLabel x={90} y={25 + (i * 30)} align="end" on={currentState[i]}>Q{i}</BlockLabel>
