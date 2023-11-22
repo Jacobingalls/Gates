@@ -7,6 +7,7 @@ import { TwoInputGateCircuit, TwoInputTruthTableCircuit } from "../Circuits/Basi
 import { NorGate } from "../Components/Gates/OrGates"
 import { NandGate } from "../Components/Gates/AndGates"
 import { XnorGate } from "../Components/Gates/XorGates"
+import { XorCircuit } from "../Circuits/Basic/XorCircuit"
 
 import { LessonFooter } from "../App/LessonFooter"
 
@@ -104,14 +105,15 @@ const XnorGateSection = () => {
 	  <div>
 		View as:&nbsp;
 		<SegmentedControl 
-		  values={["diagram", "table"]} 
-		  titles={["Diagram", "Truth Table"]}
+		  values={["diagram", "gates", "table"]} 
+		  titles={["Diagram", "As Gates", "Truth Table"]}
 		  value={version}
 		  setValue={setVersion}
 		/>
 	  </div>
 	</div>
 	{ version === "diagram" && <TwoInputGateCircuit Gate={ XnorGate } /> }
+	{ version === "gates" && <XorCircuit inverted={true} /> }
 	{ version === "table" && <TwoInputTruthTableCircuit fn={(a, b) => { 
 		return a === b 
 	}} /> }

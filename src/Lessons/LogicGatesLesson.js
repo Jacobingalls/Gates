@@ -3,6 +3,8 @@ import { SegmentedControl } from "../App/SegmentedControl"
 
 import { ButtonCircuit } from "../Circuits/Basic/ButtonCircuit"
 import { TwoInputGateCircuit, TwoInputTruthTableCircuit } from "../Circuits/Basic/TwoInputGateCircuits"
+import { XorCircuit } from "../Circuits/Basic/XorCircuit"
+
 import { OrGate } from "../Components/Gates/OrGates"
 import { AndGate } from "../Components/Gates/AndGates"
 import { XorGate } from "../Components/Gates/XorGates"
@@ -100,14 +102,15 @@ const XorGateSection = () => {
 	  <div>
 		View as:&nbsp;
 		<SegmentedControl 
-		  values={["diagram", "table"]} 
-		  titles={["Diagram", "Truth Table"]}
+		  values={["diagram", "gates", "table"]} 
+		  titles={["Diagram", "As Gates", "Truth Table"]}
 		  value={version}
 		  setValue={setVersion}
 		/>
 	  </div>
 	</div>
 	{ version === "diagram" && <TwoInputGateCircuit Gate={ XorGate } /> }
+	{ version === "gates" && <XorCircuit /> }
 	{ version === "table" && <TwoInputTruthTableCircuit fn={(a, b) => { 
 		return a !== b 
 	}} /> }
