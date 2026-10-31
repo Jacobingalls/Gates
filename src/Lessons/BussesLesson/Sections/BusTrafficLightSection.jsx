@@ -6,7 +6,6 @@ import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
 import { Wire, Bus, BusLabel } from "../../../Components/Wires"
 import { Led } from "../../../Components/Outputs/Led"
 import { TrafficLight } from "../../../Components/Outputs/TrafficLight"
-import { TFlipFlop } from "../../../Components/Memory/TFlipFlop"
 import { Counter } from "../../../Components/Math/Counter"
 
 export const BusTrafficLightSection = () => {

@@ -19,6 +19,11 @@ Builds the app for production to the `build` folder.
 
 Serves the production build locally.
 
+## Document format
+
+Pages and parts are React. Diagrams are JSON files kept next to the `Section.jsx` that shows them,
+under `src/Lessons`. See [docs/format.md](docs/format.md).
+
 ## Deployment
 
 Pushes to `main` build the app and deploy it to GitHub Pages.

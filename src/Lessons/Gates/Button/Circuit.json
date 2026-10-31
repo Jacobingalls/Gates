@@ -1,0 +1,12 @@
+{
+	"format": 1,
+	"kind": "circuit",
+	"size": [350, 100],
+	"instances": [
+		{ "id": "button", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" } },
+		{ "id": "light", "component": "Led", "at": [330, 50] }
+	],
+	"nets": [
+		{ "id": "w1", "connect": ["button.output", "light.on"], "route": [[[50, 50], [330, 50]]] }
+	]
+}

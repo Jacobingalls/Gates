@@ -4,7 +4,7 @@ import './index.css';
 import App from './App/App';
 import reportWebVitals from './reportWebVitals';
 
-import { LogicGatesLesson } from "./Lessons/LogicGatesLesson/LogicGatesLesson"
+import { LogicGatesLesson } from "./Lessons/Gates/LogicGatesLesson"
 import { InvertedLogicGatesLesson } from "./Lessons/InvertedLogicGatesLesson/InvertedLogicGatesLesson"
 import { SequentialCircuitsLesson } from "./Lessons/SequentialCircuitsLesson/SequentialCircuitsLesson"
 import { StateMachineLesson } from "./Lessons/StateMachineLesson/StateMachineLesson"

@@ -2,10 +2,10 @@ import {useState} from "react";
 
 import { LessonFooter } from "../../App/LessonFooter"
 
-import { ButtonSection } from "./Sections/ButtonSection"
-import { OrGateSection } from "./Sections/OrGateSection"
-import { AndGateSection } from "./Sections/AndGateSection"
-import { XorGateSection } from "./Sections/XorGateSection"
+import { ButtonSection } from "./Button/Section"
+import { OrGateSection } from "./OrGate/Section"
+import { AndGateSection } from "./AndGate/Section"
+import { XorGateSection } from "./XorGate/Section"
 
 export const LogicGatesLesson = () => {
 	return <div className="lesson">
