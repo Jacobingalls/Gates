@@ -1,16 +1,41 @@
 import {useState} from "react";
 
-import { Circuit, CircuitSVG } from "../Circuit"
-import { Wire } from "../../Components/Wires"
-import { Led } from "../../Components/Outputs/Led"
-import { KeyboardButton } from "../../Components/Buttons/KeyboardButton.js"
-import { NorGate } from "../../Components/Gates/OrGates"
-import { AndGate } from "../../Components/Gates/AndGates"
-import { NotGate } from "../../Components/Gates/NotGates"
-import { DFlipFlop } from "../../Components/Memory/DFlipFlop"
-import { DLatch } from "../../Components/Memory/DLatch"
+import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
+import { Wire } from "../../../Components/Wires"
+import { Led } from "../../../Components/Outputs/Led"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.js"
+import { NorGate } from "../../../Components/Gates/OrGates"
+import { AndGate } from "../../../Components/Gates/AndGates"
+import { NotGate } from "../../../Components/Gates/NotGates"
+import { DFlipFlop } from "../../../Components/Memory/DFlipFlop"
+import { DLatch } from "../../../Components/Memory/DLatch"
 
-export const DFlipFlopCircuit = ({ version }) => {
+import { SegmentedControl } from "../../../App/SegmentedControl"
+
+export const DFlipFlopSection = () => {
+  
+  const [version, setVersion] = useState("block");
+  
+  return <div className="section">
+	<div className="header">
+	  <h1>D Flip-Flop</h1>
+	  <div>
+		View as:&nbsp;
+		<SegmentedControl 
+		  values={["block", "half-gates", "gates"]} 
+		  titles={["Component", "Using D Latch", "All Gates"]}
+		  value={version}
+		  setValue={setVersion}
+		/>
+	  </div>
+	</div>
+	{ version === "block" && <DFlipFlopCircuit version="block" /> }
+	{ version === "half-gates" && <DFlipFlopCircuit version="half-gates" /> }
+	{ version === "gates" && <DFlipFlopCircuit version="gates" /> }
+  </div>
+}
+
+const DFlipFlopCircuit = ({ version }) => {
 	if ( version === "block" ) {
 		return <DFlipFlopBlockCircuit />
 	} else if ( version === "half-gates" ) {
@@ -22,7 +47,7 @@ export const DFlipFlopCircuit = ({ version }) => {
 	}
 }
 
-export const DFlipFlopBlockCircuit = () => {
+const DFlipFlopBlockCircuit = () => {
 	
 	const [d, setD] = useState(false);
 	const [clk, setClk] = useState(false); 
@@ -57,7 +82,7 @@ export const DFlipFlopBlockCircuit = () => {
 	</Circuit>
 }
 
-export const DFlipFlopHalfGatesCircuit = () => {
+const DFlipFlopHalfGatesCircuit = () => {
 	
 	// AND Gates 1
 	const [d, setD] = useState(false);
@@ -100,7 +125,7 @@ export const DFlipFlopHalfGatesCircuit = () => {
 	</Circuit>
 }
 
-export const DFlipFlopGatesCircuit = () => {
+const DFlipFlopGatesCircuit = () => {
 	
 	// AND Gates 1
 	const [d, setD] = useState(false);
@@ -138,11 +163,11 @@ export const DFlipFlopGatesCircuit = () => {
 			{/* AND Gates 1 */}
 			<g>
 				<Wire path="M50,50 h200
-	  				M70,50 v90 h30" on={d} />
+					  M70,50 v90 h30" on={d} />
 				<Wire path="M145,140 h45 a 10 10, 0, 0, 1, 20 0 h40" on={notD} />
 				<Wire path="M50,205 h150 v-50 h50 
-	  				M200,155 v-90 h50
-	  				M200,205 h200" on={en} />
+					  M200,155 v-90 h50
+					  M200,205 h200" on={en} />
 				
 				<AndGate x={250} y={30} input1={d} input2={en} output={setW1} />
 				<AndGate x={250} y={120} input1={notD} input2={en} output={setW4} />

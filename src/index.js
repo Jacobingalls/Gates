@@ -4,9 +4,11 @@ import './index.css';
 import App from './App/App';
 import reportWebVitals from './reportWebVitals';
 
-import { LogicGatesLesson } from "./Lessons/LogicGatesLesson"
-import { InvertedLogicGatesLesson } from "./Lessons/InvertedLogicGatesLesson"
-import { SequentialCircuitsLesson } from "./Lessons/SequentialCircuitsLesson"
+import { LogicGatesLesson } from "./Lessons/LogicGatesLesson/LogicGatesLesson"
+import { InvertedLogicGatesLesson } from "./Lessons/InvertedLogicGatesLesson/InvertedLogicGatesLesson"
+import { SequentialCircuitsLesson } from "./Lessons/SequentialCircuitsLesson/SequentialCircuitsLesson"
+import { StateMachineLesson } from "./Lessons/StateMachineLesson/StateMachineLesson"
+import { BussesLesson } from "./Lessons/BussesLesson/BussesLesson"
 
 import {
   createBrowserRouter,
@@ -15,28 +17,31 @@ import {
 } from "react-router-dom";
 
 const router = createBrowserRouter([
-    {
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      {
         path: "/",
-        element: <App />,
-        children: [
-            {
-                path: "/",
-                element: <Navigate to="/lessons/logic-gates" />
-            },
-            {
-                path: "lessons/logic-gates",
-                element: <LogicGatesLesson />
-            },
-            {
-                path: "lessons/inverted-logic-gates",
-                element: <InvertedLogicGatesLesson />
-            },
-            {
-                path: "lessons/sequential-circuits",
-                element: <SequentialCircuitsLesson />
-            }
-        ]
-    },
+        element: <Navigate to="/lessons/logic-gates" />
+      }, {
+        path: "lessons/logic-gates",
+        element: <LogicGatesLesson />
+      }, {
+        path: "lessons/inverted-logic-gates",
+        element: <InvertedLogicGatesLesson />
+      }, {
+        path: "lessons/sequential-circuits",
+        element: <SequentialCircuitsLesson />
+      }, {
+        path: "lessons/busses",
+        element: <BussesLesson />
+      }, {
+        path: "lessons/state-machines",
+        element: <StateMachineLesson />
+      }
+    ]
+  },
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

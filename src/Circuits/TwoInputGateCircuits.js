@@ -1,10 +1,10 @@
 import {useState} from "react";
 
-import { Circuit, CircuitSVG } from "../Circuit"
-import { TruthTable, TruthTableRow, TruthTableHeader, TruthTableCell } from "../TruthTable"
-import { Wire } from "../../Components/Wires"
-import { Led } from "../../Components/Outputs/Led"
-import { KeyboardButton } from "../../Components/Buttons/KeyboardButton.js"
+import { Circuit, CircuitSVG } from "./Circuit"
+import { TruthTable, TruthTableRow, TruthTableHeader, TruthTableCell } from "./TruthTable"
+import { Wire } from "../Components/Wires"
+import { Led } from "../Components/Outputs/Led"
+import { KeyboardButton } from "../Components/Buttons/KeyboardButton.js"
 
 export const TwoInputGateCircuit = ({Gate}) => {
 	

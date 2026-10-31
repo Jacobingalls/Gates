@@ -1,14 +1,38 @@
 import {useState} from "react";
 
-import { Circuit, CircuitSVG } from "../Circuit"
-import { Wire } from "../../Components/Wires"
-import { Led } from "../../Components/Outputs/Led"
-import { KeyboardButton } from "../../Components/Buttons/KeyboardButton.js"
-import { NorGate } from "../../Components/Gates/OrGates"
+import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
+import { Wire } from "../../../Components/Wires"
+import { Led } from "../../../Components/Outputs/Led"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.js"
+import { NorGate } from "../../../Components/Gates/OrGates"
 
-import { SRLatch } from "../../Components/Memory/SRLatch"
+import { SRLatch } from "../../../Components/Memory/SRLatch"
 
-export const SRLatchCircuit = ({ version }) => {
+import { SegmentedControl } from "../../../App/SegmentedControl"
+
+export const SRLatchSection = () => {
+  
+  const [version, setVersion] = useState("block");
+  
+  return <div className="section">
+	<div className="header">
+	  <h1>SR Latch</h1>
+	  <div>
+		View as:&nbsp;
+		<SegmentedControl 
+		  values={["block", "gates"]} 
+		  titles={["Component", "All Gates"]}
+		  value={version}
+		  setValue={setVersion}
+		/>
+	  </div>
+	</div>
+	{ version === "block" && <SRLatchCircuit version="block" /> }
+	{ version === "gates" && <SRLatchCircuit version="gates" /> }
+  </div>
+}
+
+const SRLatchCircuit = ({ version }) => {
 	if ( version === "block" ) {
 		return <SRLatchBlockCircuit />
 	} else if ( version === "gates" ) {
@@ -18,7 +42,7 @@ export const SRLatchCircuit = ({ version }) => {
 	}
 }
 
-export const SRLatchBlockCircuit = () => {
+const SRLatchBlockCircuit = () => {
 	
 	const [s, setS] = useState(false);
 	const [r, setR] = useState(false); 
@@ -54,7 +78,7 @@ export const SRLatchBlockCircuit = () => {
 	</Circuit>
 }
 
-export const SRLatchGatesCircuit = () => {
+const SRLatchGatesCircuit = () => {
   
   const [w1, setW1] = useState(false);
   const [w2, setW2] = useState(false); 

@@ -1,12 +1,38 @@
 import {useState} from "react";
 
-import { Circuit, CircuitSVG } from "../Circuit"
-import { TruthTable, TruthTableRow, TruthTableHeader, TruthTableCell } from "../TruthTable"
+import { SegmentedControl } from "../../../App/SegmentedControl"
 
-import { NotGate } from "../../Components/Gates/NotGates";
-import { Wire } from "../../Components/Wires"
-import { Led } from "../../Components/Outputs/Led"
-import { KeyboardButton } from "../../Components/Buttons/KeyboardButton.js"
+import { TwoInputGateCircuit, TwoInputTruthTableCircuit } from "../../../Circuits/TwoInputGateCircuits"
+
+import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
+import { TruthTable, TruthTableRow, TruthTableHeader, TruthTableCell } from "../../../Circuits/TruthTable"
+
+import { NotGate } from "../../../Components/Gates/NotGates";
+import { Wire } from "../../../Components/Wires"
+import { Led } from "../../../Components/Outputs/Led"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.js"
+
+export const NotGateSection = () => {
+  
+  const [version, setVersion] = useState("diagram");
+  
+  return <div className="section">
+	<div className="header">
+	  <h1>Not Gate</h1>
+	  <div>
+		View as:&nbsp;
+		<SegmentedControl 
+		  values={["diagram", "table"]} 
+		  titles={["Diagram", "Truth Table"]}
+		  value={version}
+		  setValue={setVersion}
+		/>
+	  </div>
+	</div>
+	{ version === "diagram" && <NotGateCircuit version="diagram" /> }
+	{ version === "table" && <NotGateCircuit version="table" /> }
+  </div>
+}
 
 export const NotGateCircuit = ({ version }) => {
 	if ( version === "diagram" ) {

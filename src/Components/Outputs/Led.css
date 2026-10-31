@@ -1,0 +1,44 @@
+.led {
+  stroke: #444;
+  stroke-width: 3px;
+  fill: #33333f;
+}
+
+.led.on {
+  stroke: #eee;
+  fill: #fff;
+  box-shadow: 0 0 10px 1px #fff;
+}
+
+.led.red {
+	stroke: #544;
+	fill: #533;
+}
+
+.led.on.red {
+	fill: #f00;
+	stroke: #c00;
+	box-shadow: 0 0 10px 1px #e00;
+}
+
+.led.yellow {
+	stroke: #554;
+	fill: #553;
+}
+
+.led.on.yellow {
+	fill: #ff0;
+	stroke: #cc0;
+	box-shadow: 0 0 10px 1px #ee0;
+}
+
+.led.green {
+	stroke: #454;
+	fill: #353;
+}
+
+.led.on.green {
+	fill: #0f0;
+	stroke: #0f0;
+	box-shadow: 0 0 10px 1px #0e0;
+}

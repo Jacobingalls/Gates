@@ -63,17 +63,6 @@ body {
   stroke: #DDE;
 }
 
-.wire {
-  stroke: rgba(255, 255, 255, 0.1);
-  stroke-width: 3px;
-  fill: none;
-}
-
-.wire.on {
-  stroke: rgba(255, 255, 255, 0.5);
-  stroke-width: 3px;
-}
-
 .gate {
   fill: #445;
   stroke: #99A;
@@ -84,18 +73,6 @@ body {
   fill: none;
   stroke: #99A;
   stroke-width: 3px;
-}
-
-.led {
-  stroke: #444;
-  stroke-width: 3px;
-  fill: #33333f;
-}
-
-.led.on {
-  stroke: #eee;
-  fill: #fff;
-  box-shadow: 0 0 10px 1px #fff;
 }
 
 

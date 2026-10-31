@@ -1,17 +1,42 @@
 import {useState} from "react";
 
-import { Circuit, CircuitSVG } from "../Circuit"
-import { Wire } from "../../Components/Wires"
-import { Led } from "../../Components/Outputs/Led"
-import { KeyboardButton } from "../../Components/Buttons/KeyboardButton.js"
-import { NorGate } from "../../Components/Gates/OrGates"
-import { AndGate } from "../../Components/Gates/AndGates"
-import { NotGate } from "../../Components/Gates/NotGates"
+import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
+import { Wire } from "../../../Components/Wires"
+import { Led } from "../../../Components/Outputs/Led"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.js"
+import { NorGate } from "../../../Components/Gates/OrGates"
+import { AndGate } from "../../../Components/Gates/AndGates"
+import { NotGate } from "../../../Components/Gates/NotGates"
 
-import { DLatch } from "../../Components/Memory/DLatch"
-import { SRLatch } from "../../Components/Memory/SRLatch"
+import { DLatch } from "../../../Components/Memory/DLatch"
+import { SRLatch } from "../../../Components/Memory/SRLatch"
 
-export const DLatchCircuit = ({ version }) => {
+import { SegmentedControl } from "../../../App/SegmentedControl"
+
+export const DLatchSection = () => {
+  
+  const [version, setVersion] = useState("block");
+  
+  return <div className="section">
+	<div className="header">
+	  <h1>D Latch</h1>
+	  <div>
+		View as:&nbsp;
+		<SegmentedControl 
+		  values={["block", "half-gates", "gates"]} 
+		  titles={["Component", "Using SR Latch", "All Gates"]}
+		  value={version}
+		  setValue={setVersion}
+		/>
+	  </div>
+	</div>
+	{ version === "block" && <DLatchCircuit version="block" /> }
+	{ version === "half-gates" && <DLatchCircuit version="half-gates" /> }
+	{ version === "gates" && <DLatchCircuit version="gates" /> }
+  </div>
+}
+
+const DLatchCircuit = ({ version }) => {
 	if ( version === "block" ) {
 		return <DLatchBlockCircuit />
 	} else if ( version === "half-gates" ) {
@@ -23,7 +48,7 @@ export const DLatchCircuit = ({ version }) => {
 	}
 }
 
-export const DLatchBlockCircuit = () => {
+const DLatchBlockCircuit = () => {
 	const [d, setD] = useState(false);
 	const [en, setEn] = useState(false); 
 	const [q, setQ] = useState(false);
@@ -57,7 +82,7 @@ export const DLatchBlockCircuit = () => {
 	</Circuit>
 }
 
-export const DLatchHalfGatesCircuit = () => {
+const DLatchHalfGatesCircuit = () => {
 	
 	// SR Latch
 	const [w1, setW1] = useState(false);
@@ -117,7 +142,7 @@ export const DLatchHalfGatesCircuit = () => {
 	</Circuit>
 }
 
-export const DLatchGatesCircuit = () => {
+const DLatchGatesCircuit = () => {
 	
 	// SR Latch
 	const [w1, setW1] = useState(false);

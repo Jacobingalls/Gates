@@ -1,8 +1,10 @@
+import "./Led.css"
+
 import classNames from "classnames";
 
-export const Led = ({x, y, on}) => {
+export const Led = ({x, y, on, color}) => {
   return <circle
-	className={classNames("led", {"on": on === true})}
+	className={classNames("led", color, {"on": on === true})}
 	cx={x}
 	cy={y}
 	r="10"

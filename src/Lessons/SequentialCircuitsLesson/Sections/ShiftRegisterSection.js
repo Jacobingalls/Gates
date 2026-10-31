@@ -1,13 +1,37 @@
 import {useState} from "react";
 
-import { Circuit, CircuitSVG } from "../Circuit"
-import { Wire } from "../../Components/Wires"
-import { Led } from "../../Components/Outputs/Led"
-import { KeyboardButton } from "../../Components/Buttons/KeyboardButton"
-import { DFlipFlop } from "../../Components/Memory/DFlipFlop"
-import { EightBitShiftRegister } from "../../Components/Memory/ShiftRegisters"
+import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
+import { Wire } from "../../../Components/Wires"
+import { Led } from "../../../Components/Outputs/Led"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton"
+import { DFlipFlop } from "../../../Components/Memory/DFlipFlop"
+import { EightBitShiftRegister } from "../../../Components/Memory/ShiftRegisters"
 
-export const ShiftRegisterCircuit = ({ version }) => {
+import { SegmentedControl } from "../../../App/SegmentedControl"
+
+export const ShiftRegisterSection = () => {
+  
+  const [version, setVersion] = useState("block");
+  
+  return <div className="section">
+	<div className="header">
+	  <h1>Shift Register</h1>
+	  <div>
+		View as:&nbsp;
+		<SegmentedControl 
+		  values={["block", "d-flip-flops"]} 
+		  titles={["Component", "Using D Flip-Flops"]}
+		  value={version}
+		  setValue={setVersion}
+		/>
+	  </div>
+	</div>
+	{ version === "block" && <ShiftRegisterCircuit version="block" /> }
+	{ version === "d-flip-flops" && <ShiftRegisterCircuit version="d-flip-flops" /> }
+  </div>
+}
+
+const ShiftRegisterCircuit = ({ version }) => {
 	if ( version === "block" ) {
 		return <ShiftRegisterBlockCircuit />
 	} else if ( version === "d-flip-flops" ) {
@@ -17,7 +41,7 @@ export const ShiftRegisterCircuit = ({ version }) => {
 	}
 }
 
-export const ShiftRegisterBlockCircuit = () => {
+const ShiftRegisterBlockCircuit = () => {
 	const [d, setD] = useState(false);
 	const [clk, setClk] = useState(false);
 	
@@ -90,7 +114,7 @@ export const ShiftRegisterBlockCircuit = () => {
 	</Circuit>
 }
 
-export const ShiftRegisterDFlipFlopsCircuit = () => {
+const ShiftRegisterDFlipFlopsCircuit = () => {
 	
 	const [d, setD] = useState(false);
 	const [clk, setClk] = useState(false);

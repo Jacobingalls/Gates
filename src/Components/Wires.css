@@ -1,0 +1,31 @@
+.wire {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 3px;
+  fill: none;
+}
+
+.wire.on {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 3px;
+}
+
+.bus {
+  stroke: #669;
+  stroke-width: 6px;
+  fill: none;
+}
+
+.bus.level-2 {
+	stroke: #99c;
+	stroke-width: 8px;
+}
+
+.bus-annotation {
+	stroke: #ccc;
+	stroke-width: 1px;
+	fill: none;
+}
+
+.bus-label {
+	font-size: 12px;
+}
