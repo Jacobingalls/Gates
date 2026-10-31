@@ -1,0 +1,33 @@
+{
+	"format": 1,
+	"kind": "circuit",
+	"size": [600, 350],
+	"instances": [
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 20], "props": { "keyboard": "0" } },
+		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 60], "props": { "keyboard": "1" } },
+		{ "id": "button_3", "component": "KeyboardButton", "at": [10, 100], "props": { "keyboard": "2" } },
+		{ "id": "button_4", "component": "KeyboardButton", "at": [10, 140], "props": { "keyboard": "3" } },
+		{ "id": "button_5", "component": "KeyboardButton", "at": [10, 180], "props": { "keyboard": "4" } },
+		{ "id": "button_6", "component": "KeyboardButton", "at": [10, 220], "props": { "keyboard": "5" } },
+		{ "id": "button_7", "component": "KeyboardButton", "at": [10, 260], "props": { "keyboard": "6" } },
+		{ "id": "button_8", "component": "KeyboardButton", "at": [10, 300], "props": { "keyboard": "7" } },
+		{ "id": "light_1", "component": "Led", "at": [580, 40] },
+		{ "id": "light_2", "component": "Led", "at": [580, 80] },
+		{ "id": "light_3", "component": "Led", "at": [580, 120] },
+		{ "id": "light_4", "component": "Led", "at": [580, 160] },
+		{ "id": "light_5", "component": "Led", "at": [580, 200] },
+		{ "id": "light_6", "component": "Led", "at": [580, 240] },
+		{ "id": "light_7", "component": "Led", "at": [580, 280] },
+		{ "id": "light_8", "component": "Led", "at": [580, 320] }
+	],
+	"nets": [
+		{ "id": "w0", "connect": ["button_1.output", "light_1.on"], "route": [[[50, 40], [180, 40], [180, 145], [440, 145], [440, 40], [570, 40]]] },
+		{ "id": "w1", "connect": ["button_2.output", "light_2.on"], "route": [[[50, 80], [170, 80], [170, 155], [450, 155], [450, 80], [570, 80]]] },
+		{ "id": "w2", "connect": ["button_3.output", "light_3.on"], "route": [[[50, 120], [160, 120], [160, 165], [460, 165], [460, 120], [570, 120]]] },
+		{ "id": "w3", "connect": ["button_4.output", "light_4.on"], "route": [[[50, 160], [150, 160], [150, 175], [470, 175], [470, 160], [570, 160]]] },
+		{ "id": "w4", "connect": ["button_5.output", "light_5.on"], "route": [[[50, 200], [150, 200], [150, 185], [470, 185], [470, 200], [570, 200]]] },
+		{ "id": "w5", "connect": ["button_6.output", "light_6.on"], "route": [[[50, 240], [160, 240], [160, 195], [460, 195], [460, 240], [570, 240]]] },
+		{ "id": "w6", "connect": ["button_7.output", "light_7.on"], "route": [[[50, 280], [170, 280], [170, 205], [450, 205], [450, 280], [570, 280]]] },
+		{ "id": "w7", "connect": ["button_8.output", "light_8.on"], "route": [[[50, 320], [180, 320], [180, 215], [440, 215], [440, 320], [570, 320]]] }
+	]
+}

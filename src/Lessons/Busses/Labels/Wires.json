@@ -1,0 +1,33 @@
+{
+	"format": 1,
+	"kind": "circuit",
+	"size": [600, 350],
+	"instances": [
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 20], "props": { "keyboard": "0" } },
+		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 60], "props": { "keyboard": "1" } },
+		{ "id": "button_3", "component": "KeyboardButton", "at": [10, 100], "props": { "keyboard": "2" } },
+		{ "id": "button_4", "component": "KeyboardButton", "at": [10, 140], "props": { "keyboard": "3" } },
+		{ "id": "button_5", "component": "KeyboardButton", "at": [10, 180], "props": { "keyboard": "4" } },
+		{ "id": "button_6", "component": "KeyboardButton", "at": [10, 220], "props": { "keyboard": "5" } },
+		{ "id": "button_7", "component": "KeyboardButton", "at": [10, 260], "props": { "keyboard": "6" } },
+		{ "id": "button_8", "component": "KeyboardButton", "at": [10, 300], "props": { "keyboard": "7" } },
+		{ "id": "light_1", "component": "Led", "at": [580, 40] },
+		{ "id": "light_2", "component": "Led", "at": [580, 80] },
+		{ "id": "light_3", "component": "Led", "at": [580, 120] },
+		{ "id": "light_4", "component": "Led", "at": [580, 160] },
+		{ "id": "light_5", "component": "Led", "at": [580, 200] },
+		{ "id": "light_6", "component": "Led", "at": [580, 240] },
+		{ "id": "light_7", "component": "Led", "at": [580, 280] },
+		{ "id": "light_8", "component": "Led", "at": [580, 320] }
+	],
+	"nets": [
+		{ "id": "w0", "connect": ["button_1.output", "light_1.on"], "route": [[[50, 40], [570, 40]]] },
+		{ "id": "w4", "connect": ["button_2.output", "light_5.on"], "route": [[[50, 80], [100, 80], { "hop": [140, 80] }, [150, 80], [180, 80], [180, 290], [490, 290], [490, 200], [570, 200]]] },
+		{ "id": "w1", "connect": ["button_3.output", "light_2.on"], "route": [[[50, 120], [110, 120], [110, 50], [510, 50], [510, 80], [570, 80]]] },
+		{ "id": "w5", "connect": ["button_4.output", "light_6.on"], "route": [[[50, 160], [110, 160], { "hop": [140, 160] }, [150, 160], [170, 160], [170, 300], [500, 300], [500, 240], [570, 240]]] },
+		{ "id": "w2", "connect": ["button_5.output", "light_3.on"], "route": [[[50, 200], [120, 200], [120, 60], [500, 60], [500, 120], [570, 120]]] },
+		{ "id": "w6", "connect": ["button_6.output", "light_7.on"], "route": [[[50, 240], [120, 240], { "hop": [140, 240] }, [150, 240], [160, 240], [160, 310], [510, 310], [510, 280], [570, 280]]] },
+		{ "id": "w3", "connect": ["button_7.output", "light_4.on"], "route": [[[50, 280], [130, 280], [130, 70], [490, 70], [490, 160], [570, 160]]] },
+		{ "id": "w7", "connect": ["button_8.output", "light_8.on"], "route": [[[50, 320], [570, 320]]] }
+	]
+}

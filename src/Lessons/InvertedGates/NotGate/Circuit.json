@@ -1,0 +1,14 @@
+{
+	"format": 1,
+	"kind": "circuit",
+	"size": [350, 100],
+	"instances": [
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" } },
+		{ "id": "not_gate_1", "component": "NotGate", "at": [150, 25] },
+		{ "id": "light_1", "component": "Led", "at": [330, 50] }
+	],
+	"nets": [
+		{ "id": "w1", "connect": ["button_1.output", "not_gate_1.input"], "route": [[[50, 50], [150, 50]]] },
+		{ "id": "w2", "connect": ["not_gate_1.output", "light_1.on"], "route": [[[200, 50], [330, 50]]] }
+	]
+}

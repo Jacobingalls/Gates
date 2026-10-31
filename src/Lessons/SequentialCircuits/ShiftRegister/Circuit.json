@@ -1,0 +1,30 @@
+{
+	"format": 1,
+	"kind": "circuit",
+	"size": [280, 330],
+	"instances": [
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" } },
+		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 80], "props": { "keyboard": "2" } },
+		{ "id": "shift_register_1", "component": "EightBitShiftRegister", "at": [100, 25] },
+		{ "id": "light_1", "component": "Led", "at": [260, 50] },
+		{ "id": "light_2", "component": "Led", "at": [260, 80] },
+		{ "id": "light_3", "component": "Led", "at": [260, 110] },
+		{ "id": "light_4", "component": "Led", "at": [260, 140] },
+		{ "id": "light_5", "component": "Led", "at": [260, 170] },
+		{ "id": "light_6", "component": "Led", "at": [260, 200] },
+		{ "id": "light_7", "component": "Led", "at": [260, 230] },
+		{ "id": "light_8", "component": "Led", "at": [260, 260] }
+	],
+	"nets": [
+		{ "id": "d", "connect": ["button_1.output", "shift_register_1.d"], "route": [[[50, 50], [150, 50]]] },
+		{ "id": "clk", "connect": ["button_2.output", "shift_register_1.clk"], "route": [[[50, 100], [75, 100], [75, 80], [100, 80]]] },
+		{ "id": "q0", "connect": ["shift_register_1.setQ0", "light_1.on"], "route": [[[200, 50], [250, 50]]] },
+		{ "id": "q1", "connect": ["shift_register_1.setQ1", "light_2.on"], "route": [[[200, 80], [250, 80]]] },
+		{ "id": "q2", "connect": ["shift_register_1.setQ2", "light_3.on"], "route": [[[200, 110], [250, 110]]] },
+		{ "id": "q3", "connect": ["shift_register_1.setQ3", "light_4.on"], "route": [[[200, 140], [250, 140]]] },
+		{ "id": "q4", "connect": ["shift_register_1.setQ4", "light_5.on"], "route": [[[200, 170], [250, 170]]] },
+		{ "id": "q5", "connect": ["shift_register_1.setQ5", "light_6.on"], "route": [[[200, 200], [250, 200]]] },
+		{ "id": "q6", "connect": ["shift_register_1.setQ6", "light_7.on"], "route": [[[200, 230], [250, 230]]] },
+		{ "id": "q7", "connect": ["shift_register_1.setQ7", "light_8.on"], "route": [[[200, 260], [250, 260]]] }
+	]
+}

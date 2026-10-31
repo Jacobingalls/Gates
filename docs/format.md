@@ -45,11 +45,18 @@ import truthTable from "./TruthTable.json"
 - `instances` are parts. `component` names a React component in `PARTS` in
   `src/Circuits/CircuitDiagram.jsx`, or `KeyboardButton`. `at` becomes its `x` and `y` props, and
   `props` are passed through. To add a part, write the React component and add it to `PARTS`.
+- Parts that are only drawn work the same way. `Bus` takes its `path` and `label` through `props` and
+  needs no `at`, and `BusLabel` takes its text as `props.children`.
 - `nets` hold the value of one wire. `connect` lists `instance.prop` terminals, using the part's React
-  prop names. A prop called `output` receives the net's setter, and any other prop receives its value.
+  prop names. A prop called `output`, or starting with `set`, receives the net's setter, and any other
+  prop receives its value. Nets start as `false`, and can carry a number, as a counter's does.
 - `route` is how the net is drawn: polylines in canvas coordinates, where each one after the first
-  starts somewhere on the net. Vertical runs hop automatically where they cross another net's
-  horizontal run.
+  starts somewhere on the net. A point can be `{ "hop": [x, y] }`, which arcs from the previous point
+  to that one, so a wire can jump over another. A net with no `route` is not drawn.
+- `"inverseOf": "q"` makes a read-only net that is always the opposite of net `q`.
+- `"delay": 1` makes writes to the net wait that many milliseconds. One net in each feedback loop needs
+  this, so the gates in a latch can settle. Which way such a latch powers up is a race, so its
+  starting state can differ between page loads until a value is loaded.
 
 ## Truth tables
 

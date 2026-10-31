@@ -1,0 +1,35 @@
+{
+	"format": 1,
+	"kind": "circuit",
+	"size": [880, 250],
+	"instances": [
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 35], "props": { "keyboard": "1" } },
+		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 185], "props": { "keyboard": "2" } },
+		{ "id": "and_gate_1", "component": "AndGate", "at": [250, 30] },
+		{ "id": "and_gate_2", "component": "AndGate", "at": [250, 120] },
+		{ "id": "not_gate_1", "component": "NotGate", "at": [100, 115] },
+		{ "id": "nor_gate_1", "component": "NorGate", "at": [400, 30] },
+		{ "id": "nor_gate_2", "component": "NorGate", "at": [400, 120] },
+		{ "id": "light_1", "component": "Led", "at": [850, 55] },
+		{ "id": "light_2", "component": "Led", "at": [850, 145] },
+		{ "id": "and_gate_3", "component": "AndGate", "at": [550, 30] },
+		{ "id": "and_gate_4", "component": "AndGate", "at": [550, 120] },
+		{ "id": "not_gate_2", "component": "NotGate", "at": [400, 180] },
+		{ "id": "nor_gate_3", "component": "NorGate", "at": [700, 30] },
+		{ "id": "nor_gate_4", "component": "NorGate", "at": [700, 120] }
+	],
+	"nets": [
+		{ "id": "d", "connect": ["button_1.output", "and_gate_1.input1", "not_gate_1.input"], "route": [[[50, 50], [250, 50]], [[70, 50], [70, 140], [100, 140]]] },
+		{ "id": "en", "connect": ["button_2.output", "and_gate_1.input2", "and_gate_2.input2", "not_gate_2.input"], "route": [[[50, 205], [200, 205], [200, 155], [250, 155]], [[200, 155], [200, 65], [250, 65]], [[200, 205], [400, 205]]] },
+		{ "id": "notD", "connect": ["and_gate_2.input1", "not_gate_1.output"], "route": [[[145, 140], [190, 140], { "hop": [210, 140] }, [250, 140]]] },
+		{ "id": "w1", "connect": ["and_gate_1.output", "nor_gate_1.input1"], "route": [[[300, 55], [330, 55], [335, 50], [405, 50]]] },
+		{ "id": "w4", "connect": ["and_gate_2.output", "nor_gate_2.input2"], "route": [[[300, 145], [330, 145], [335, 150], [405, 150]]] },
+		{ "id": "w3", "connect": ["nor_gate_1.output", "nor_gate_2.input1", "and_gate_3.input1"], "route": [[[450, 55], [500, 55], [350, 140], [410, 140]], [[450, 55], [510, 55], [515, 50], [575, 50]]] },
+		{ "id": "w2", "connect": ["nor_gate_1.input2", "nor_gate_2.output", "and_gate_4.input1"], "route": [[[450, 145], [500, 145], [350, 60], [410, 60]], [[450, 145], [505, 145], [510, 140], [520, 140], { "hop": [540, 140] }, [560, 140]]], "delay": 1 },
+		{ "id": "w23", "connect": ["light_1.on", "nor_gate_3.output", "nor_gate_4.input1"], "route": [[[750, 55], [800, 55], [650, 140], [710, 140]], [[750, 55], [840, 55]]] },
+		{ "id": "w22", "connect": ["light_2.on", "nor_gate_3.input2", "nor_gate_4.output"], "route": [[[750, 145], [800, 145], [650, 60], [710, 60]], [[750, 145], [840, 145]]], "delay": 1 },
+		{ "id": "notEn", "connect": ["and_gate_3.input2", "and_gate_4.input2", "not_gate_2.output"], "route": [[[450, 205], [530, 205], [530, 150], [550, 150]], [[530, 150], [530, 60], [550, 60]]] },
+		{ "id": "w21", "connect": ["and_gate_3.output", "nor_gate_3.input1"], "route": [[[600, 55], [630, 55], [635, 50], [705, 50]]] },
+		{ "id": "w24", "connect": ["and_gate_4.output", "nor_gate_4.input2"], "route": [[[600, 145], [630, 145], [635, 150], [705, 150]]] }
+	]
+}

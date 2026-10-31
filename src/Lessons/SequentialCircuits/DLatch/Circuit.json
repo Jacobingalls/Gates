@@ -1,0 +1,18 @@
+{
+	"format": 1,
+	"kind": "circuit",
+	"size": [280, 150],
+	"instances": [
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" } },
+		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 80], "props": { "keyboard": "2" } },
+		{ "id": "d_latch_1", "component": "DLatch", "at": [100, 25] },
+		{ "id": "light_1", "component": "Led", "at": [260, 50] },
+		{ "id": "light_2", "component": "Led", "at": [260, 80] }
+	],
+	"nets": [
+		{ "id": "d", "connect": ["button_1.output", "d_latch_1.d"], "route": [[[50, 50], [150, 50]]] },
+		{ "id": "en", "connect": ["button_2.output", "d_latch_1.en"], "route": [[[50, 100], [75, 100], [75, 80], [100, 80]]] },
+		{ "id": "q", "connect": ["d_latch_1.setQ", "light_1.on"], "route": [[[200, 50], [250, 50]]] },
+		{ "id": "not_q", "inverseOf": "q", "connect": ["light_2.on"], "route": [[[200, 80], [250, 80]]] }
+	]
+}

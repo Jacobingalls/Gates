@@ -1,0 +1,24 @@
+{
+	"format": 1,
+	"kind": "circuit",
+	"size": [580, 250],
+	"instances": [
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 35], "props": { "keyboard": "1" } },
+		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 185], "props": { "keyboard": "2" } },
+		{ "id": "and_gate_1", "component": "AndGate", "at": [300, 30] },
+		{ "id": "and_gate_2", "component": "AndGate", "at": [300, 120] },
+		{ "id": "not_gate_1", "component": "NotGate", "at": [150, 115] },
+		{ "id": "sr_latch_1", "component": "SRLatch", "at": [400, 60] },
+		{ "id": "light_1", "component": "Led", "at": [560, 85] },
+		{ "id": "light_2", "component": "Led", "at": [560, 115] }
+	],
+	"nets": [
+		{ "id": "d", "connect": ["button_1.output", "and_gate_1.input1", "not_gate_1.input"], "route": [[[50, 50], [300, 50]], [[100, 50], [100, 140], [150, 140]]] },
+		{ "id": "en", "connect": ["button_2.output", "and_gate_1.input2", "and_gate_2.input2"], "route": [[[50, 205], [250, 205], [250, 155], [300, 155]], [[250, 155], [250, 60], [300, 60]]] },
+		{ "id": "notD", "connect": ["and_gate_2.input1", "not_gate_1.output"], "route": [[[195, 140], [240, 140], { "hop": [260, 140] }, [310, 140]]] },
+		{ "id": "w1", "connect": ["and_gate_1.output", "sr_latch_1.s"], "route": [[[350, 55], [375, 55], [375, 85], [400, 85]]] },
+		{ "id": "w4", "connect": ["and_gate_2.output", "sr_latch_1.r"], "route": [[[350, 145], [375, 145], [375, 115], [400, 115]]] },
+		{ "id": "w3", "connect": ["sr_latch_1.setQ", "light_1.on"], "route": [[[500, 85], [550, 85]]] },
+		{ "id": "w2", "connect": ["sr_latch_1.setNotQ", "light_2.on"], "route": [[[500, 115], [550, 115]]] }
+	]
+}

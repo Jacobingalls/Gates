@@ -1,0 +1,16 @@
+{
+	"format": 1,
+	"kind": "truthTable",
+	"size": [350, 100],
+	"at": [110, 7],
+	"inputs": [
+		{ "title": "Button", "keyboard": "1", "at": [10, 30] }
+	],
+	"outputs": [
+		{ "title": "Light", "at": [330, 50] }
+	],
+	"rows": [
+		[0, 1],
+		[1, 0]
+	]
+}

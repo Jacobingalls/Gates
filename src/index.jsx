@@ -5,10 +5,10 @@ import App from './App/App';
 import reportWebVitals from './reportWebVitals';
 
 import { LogicGatesLesson } from "./Lessons/Gates/LogicGatesLesson"
-import { InvertedLogicGatesLesson } from "./Lessons/InvertedLogicGatesLesson/InvertedLogicGatesLesson"
-import { SequentialCircuitsLesson } from "./Lessons/SequentialCircuitsLesson/SequentialCircuitsLesson"
-import { StateMachineLesson } from "./Lessons/StateMachineLesson/StateMachineLesson"
-import { BussesLesson } from "./Lessons/BussesLesson/BussesLesson"
+import { InvertedLogicGatesLesson } from "./Lessons/InvertedGates/InvertedLogicGatesLesson"
+import { SequentialCircuitsLesson } from "./Lessons/SequentialCircuits/SequentialCircuitsLesson"
+import { StateMachineLesson } from "./Lessons/StateMachines/StateMachineLesson"
+import { BussesLesson } from "./Lessons/Busses/BussesLesson"
 
 import {
   createBrowserRouter,
