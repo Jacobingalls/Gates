@@ -10,34 +10,29 @@ import { AndGate } from "../../../Components/Gates/AndGates"
 import { OrGate, NorGate } from "../../../Components/Gates/OrGates"
 import { Wire } from "../../../Components/Wires"
 import { Led } from "../../../Components/Outputs/Led"
-import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.js"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.jsx"
 
 import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
 import { TruthTable, TruthTableRow, TruthTableHeader, TruthTableCell } from "../../../Circuits/TruthTable"
 
-import { XorCircuit } from "../../LogicGatesLesson/Sections/XorGateSection"
-
-export const XnorGateSection = () => {
+export const OrGateSection = () => {
   
   const [version, setVersion] = useState("diagram");
   
   return <div className="section">
 	<div className="header">
-	  <h1>Xnor Gate</h1>
+	  <h1>Or Gate</h1>
 	  <div>
 		View as:&nbsp;
 		<SegmentedControl 
-		  values={["diagram", "gates", "table"]} 
-		  titles={["Diagram", "As Gates", "Truth Table"]}
+		  values={["diagram", "table"]} 
+		  titles={["Diagram", "Truth Table"]}
 		  value={version}
 		  setValue={setVersion}
 		/>
 	  </div>
 	</div>
-	{ version === "diagram" && <TwoInputGateCircuit Gate={ XnorGate } /> }
-	{ version === "gates" && <XorCircuit inverted={true} /> }
-	{ version === "table" && <TwoInputTruthTableCircuit fn={(a, b) => { 
-		return a === b 
-	}} /> }
+	{ version === "diagram" && <TwoInputGateCircuit Gate={ OrGate } /> }
+	{ version === "table" && <TwoInputTruthTableCircuit fn={(a, b) => { return a || b }} /> }
   </div>
 }

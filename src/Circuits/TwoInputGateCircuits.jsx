@@ -4,7 +4,7 @@ import { Circuit, CircuitSVG } from "./Circuit"
 import { TruthTable, TruthTableRow, TruthTableHeader, TruthTableCell } from "./TruthTable"
 import { Wire } from "../Components/Wires"
 import { Led } from "../Components/Outputs/Led"
-import { KeyboardButton } from "../Components/Buttons/KeyboardButton.js"
+import { KeyboardButton } from "../Components/Buttons/KeyboardButton.jsx"
 
 export const TwoInputGateCircuit = ({Gate}) => {
 	

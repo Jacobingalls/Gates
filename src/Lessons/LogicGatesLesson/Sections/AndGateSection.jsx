@@ -10,18 +10,18 @@ import { AndGate } from "../../../Components/Gates/AndGates"
 import { OrGate, NorGate } from "../../../Components/Gates/OrGates"
 import { Wire } from "../../../Components/Wires"
 import { Led } from "../../../Components/Outputs/Led"
-import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.js"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.jsx"
 
 import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
 import { TruthTable, TruthTableRow, TruthTableHeader, TruthTableCell } from "../../../Circuits/TruthTable"
 
-export const OrGateSection = () => {
+export const AndGateSection = () => {
   
   const [version, setVersion] = useState("diagram");
   
   return <div className="section">
 	<div className="header">
-	  <h1>Or Gate</h1>
+	  <h1>And Gate</h1>
 	  <div>
 		View as:&nbsp;
 		<SegmentedControl 
@@ -32,7 +32,7 @@ export const OrGateSection = () => {
 		/>
 	  </div>
 	</div>
-	{ version === "diagram" && <TwoInputGateCircuit Gate={ OrGate } /> }
-	{ version === "table" && <TwoInputTruthTableCircuit fn={(a, b) => { return a || b }} /> }
+	{ version === "diagram" && <TwoInputGateCircuit Gate={ AndGate } /> }
+	{ version === "table" && <TwoInputTruthTableCircuit fn={(a, b) => { return a && b }} /> }
   </div>
 }

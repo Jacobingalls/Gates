@@ -3,7 +3,7 @@ import {useState} from "react";
 import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
 import { Wire } from "../../../Components/Wires"
 import { Led } from "../../../Components/Outputs/Led"
-import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.js"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.jsx"
 import { NorGate } from "../../../Components/Gates/OrGates"
 import { AndGate } from "../../../Components/Gates/AndGates"
 import { NotGate } from "../../../Components/Gates/NotGates"

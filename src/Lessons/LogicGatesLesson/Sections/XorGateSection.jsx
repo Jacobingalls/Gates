@@ -11,7 +11,7 @@ import { XorGate } from "../../../Components/Gates/XorGates"
 import { OrGate, NorGate } from "../../../Components/Gates/OrGates"
 import { Wire } from "../../../Components/Wires"
 import { Led } from "../../../Components/Outputs/Led"
-import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.js"
+import { KeyboardButton } from "../../../Components/Buttons/KeyboardButton.jsx"
 
 import { Circuit, CircuitSVG } from "../../../Circuits/Circuit"
 import { TruthTable, TruthTableRow, TruthTableHeader, TruthTableCell } from "../../../Circuits/TruthTable"
