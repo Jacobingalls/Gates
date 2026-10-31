@@ -19,6 +19,11 @@ Builds the app for production to the `build` folder.
 
 Serves the production build locally.
 
+## Editor
+
+The Editor link opens a circuit editor at `/editor`. It opens and saves the `Circuit.json` style files
+under `src/Lessons`.
+
 ## Document format
 
 Pages and parts are React. Diagrams are JSON files kept next to the `Section.jsx` that shows them,

@@ -1,0 +1,407 @@
+.editor {
+	--editor-line: rgba(255, 255, 255, .15);
+	--editor-panel: #111;
+	--editor-accent: #7c9cff;
+	
+	display: flex;
+	flex-direction: column;
+	height: calc(100vh - 31px);
+	text-align: left;
+	font-size: 13px;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.editor input {
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+.editor-toolbar button, .editor-panel button, .editor-panel input, .editor-panel select {
+	font: inherit;
+	color: #eef;
+}
+
+.editor-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 12px;
+	background: var(--editor-panel);
+	border-bottom: 1px solid var(--editor-line);
+}
+
+.editor-toolbar button, .editor-panel button {
+	padding: 5px 10px;
+	background: rgba(255, 255, 255, .1);
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.editor-toolbar button:hover:enabled, .editor-panel button:hover:enabled {
+	background: rgba(255, 255, 255, .2);
+}
+
+.editor-toolbar button.active {
+	background: rgba(200, 200, 255, .25);
+}
+
+.editor-toolbar button:disabled, .editor-panel button:disabled {
+	opacity: .4;
+	cursor: default;
+}
+
+.editor-toolbar button.editor-run-toggle {
+	background: #2f7d4f;
+}
+
+.editor-toolbar button.editor-run-toggle:hover {
+	background: #379159;
+}
+
+.editor-toolbar button.editor-run-toggle.active {
+	background: #a13d3d;
+}
+
+.editor-toolbar button.editor-run-toggle.active:hover {
+	background: #b84848;
+}
+
+.editor-panel[inert] {
+	opacity: .4;
+}
+
+.editor-divider {
+	width: 1px;
+	height: 20px;
+	margin: 0 6px;
+	background: var(--editor-line);
+}
+
+.editor-file {
+	margin-left: auto;
+	color: #99a;
+}
+
+.editor-status {
+	color: #ccd;
+}
+
+.editor-body {
+	flex: 1;
+	display: grid;
+	grid-template-columns: 220px minmax(0, 1fr) 250px;
+	min-height: 0;
+}
+
+.editor-panel {
+	padding: 12px;
+	overflow-y: auto;
+	background: var(--editor-panel);
+}
+
+.editor-panel input:not([type=color]), .editor-panel select {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 5px 7px;
+	background: rgba(255, 255, 255, .08);
+	border: 1px solid var(--editor-line);
+	border-radius: 5px;
+}
+
+.editor-panel h2 {
+	margin: 14px 0 6px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #99a;
+}
+
+.editor-inspector h2 {
+	margin-top: 0;
+	font-size: 15px;
+	color: #fff;
+}
+
+.editor-panel h3 {
+	margin: 14px 0 6px;
+	font-size: 12px;
+	color: #99a;
+}
+
+.editor-library {
+	padding-top: 0;
+	padding-bottom: 200px;
+	border-right: 1px solid var(--editor-line);
+}
+
+.editor-library-search {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	padding: 12px 0 4px;
+	background: var(--editor-panel);
+}
+
+.editor-library-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 8px;
+	margin-bottom: 3px;
+	background: rgba(255, 255, 255, .06);
+	border-radius: 5px;
+	cursor: grab;
+}
+
+.editor-library-item::after {
+	content: "";
+	flex: none;
+	width: 12px;
+	height: 8px;
+	margin-left: auto;
+	background: repeating-linear-gradient(#99a 0 1px, transparent 1px 3.5px);
+	opacity: 0;
+	transition: opacity .1s ease-in;
+}
+
+.editor-library-item:hover {
+	background: rgba(255, 255, 255, .14);
+}
+
+.editor-library-item:hover::after {
+	opacity: 1;
+}
+
+.editor-inspector {
+	border-left: 1px solid var(--editor-line);
+}
+
+.editor-id {
+	margin: 0 0 10px;
+	color: #99a;
+}
+
+.editor-actions, .editor-color {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.editor-actions {
+	margin-bottom: 10px;
+}
+
+.editor-field {
+	display: grid;
+	grid-template-columns: 60px minmax(0, 1fr);
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 6px;
+	color: #ccd;
+}
+
+.editor-color input {
+	width: 32px;
+	height: 26px;
+	padding: 0;
+	background: none;
+	border: none;
+}
+
+.editor-delete {
+	width: 100%;
+	margin-top: 14px;
+}
+
+.editor-duplicate {
+	width: 100%;
+	margin-top: 6px;
+}
+
+.editor-stage {
+	position: relative;
+	min-width: 0;
+	min-height: 0;
+}
+
+.editor-scroll {
+	height: 100%;
+	overflow: auto;
+	overflow-anchor: none;
+	background: #000;
+}
+
+.editor-run {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: flex;
+	padding: 40px;
+	box-sizing: border-box;
+	overflow: auto;
+	background: #000;
+}
+
+.editor-run .circuit {
+	flex: none;
+	margin: auto;
+}
+
+.circuit.editor-surface {
+	display: block;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background-color: #1a1a24;
+	background-image: radial-gradient(rgba(255, 255, 255, .13) 1px, transparent 1px);
+	background-size: 25px 25px;
+	cursor: default;
+	touch-action: none;
+}
+
+.editor-surface[data-tool=wire], .editor-surface[data-tool=bus] {
+	cursor: crosshair;
+}
+
+.editor-surface svg {
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+
+.editor-button-base {
+	fill: #222;
+	stroke: #000;
+	stroke-width: 1px;
+}
+
+.editor-button-face {
+	fill: #666;
+	stroke: #888;
+	stroke-width: 1px;
+}
+
+.circuit text.editor-button-label {
+	fill: #fff;
+	font-size: 24px;
+}
+
+.editor-frame {
+	fill: rgba(255, 255, 255, .035);
+	stroke: var(--editor-accent);
+	stroke-width: 1px;
+	stroke-dasharray: 5 4;
+}
+
+.circuit text.editor-frame-size {
+	fill: var(--editor-accent);
+	font-size: 12px;
+}
+
+.editor-handle {
+	fill: #fff;
+	stroke: var(--editor-accent);
+	stroke-width: 1px;
+}
+
+.editor-selection {
+	fill: none;
+	stroke: var(--editor-accent);
+	stroke-width: 1px;
+	stroke-dasharray: 4 3;
+}
+
+.editor-net-selection {
+	fill: none;
+	stroke: var(--editor-accent);
+	stroke-width: 1px;
+}
+
+.editor-vertex {
+	fill: #fff;
+	stroke: var(--editor-accent);
+	stroke-width: 1px;
+}
+
+.editor-pin {
+	fill: var(--editor-accent);
+	stroke: #fff;
+	stroke-width: 1px;
+}
+
+.editor-draft {
+	fill: none;
+	stroke: var(--editor-accent);
+	stroke-width: 3px;
+	stroke-dasharray: 6 4;
+}
+
+.editor-marquee {
+	fill: rgba(124, 156, 255, .12);
+	stroke: var(--editor-accent);
+	stroke-width: 1px;
+}
+
+.editor-hint {
+	margin: 0;
+	color: #99a;
+	line-height: 1.4;
+}
+
+.editor-icon {
+	flex: none;
+	width: 20px;
+	height: 20px;
+}
+
+.editor-icon-body {
+	fill: #445;
+	stroke: #99a;
+	stroke-width: 1.5px;
+}
+
+.editor-icon-line {
+	fill: none;
+	stroke: #99a;
+	stroke-width: 1.5px;
+}
+
+.editor-icon-red {
+	fill: #e55;
+}
+
+.editor-icon-yellow {
+	fill: #ec4;
+}
+
+.editor-icon-green {
+	fill: #5c6;
+}
+
+.editor-segment-selection {
+	fill: none;
+	stroke: var(--editor-accent);
+	stroke-width: 5px;
+	stroke-opacity: .6;
+}
+
+.editor-icon-bus {
+	stroke-width: 3px;
+}
+
+.editor-surface[data-tool=point] {
+	cursor: crosshair;
+}
+
+.editor-point-selection {
+	fill: none;
+	stroke: var(--editor-accent);
+	stroke-width: 1px;
+}
+
+.editor-point-preview {
+	fill: var(--editor-accent);
+	opacity: .7;
+}

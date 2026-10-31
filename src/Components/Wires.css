@@ -29,3 +29,22 @@
 .bus-label {
 	font-size: 12px;
 }
+
+.junction {
+  fill: #383843;
+}
+
+.junction.on {
+  fill: #91919a;
+}
+
+.junction.bus {
+  fill: #669;
+}
+
+.bus-stub {
+  stroke: #669;
+  stroke-width: 6px;
+  stroke-opacity: .45;
+  fill: none;
+}

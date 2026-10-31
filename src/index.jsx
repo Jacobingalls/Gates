@@ -9,6 +9,7 @@ import { InvertedLogicGatesLesson } from "./Lessons/InvertedGates/InvertedLogicG
 import { SequentialCircuitsLesson } from "./Lessons/SequentialCircuits/SequentialCircuitsLesson"
 import { StateMachineLesson } from "./Lessons/StateMachines/StateMachineLesson"
 import { BussesLesson } from "./Lessons/Busses/BussesLesson"
+import { Editor } from "./Editor/Editor"
 
 import {
   createBrowserRouter,
@@ -39,6 +40,9 @@ const router = createBrowserRouter([
       }, {
         path: "lessons/state-machines",
         element: <StateMachineLesson />
+      }, {
+        path: "editor",
+        element: <Editor />
       }
     ]
   },

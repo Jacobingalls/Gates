@@ -2,7 +2,7 @@ import {useState, useEffect} from "react";
 
 import { Block, BlockLabel, InvertedBlockLabel } from "../Block"
 
-export const DLatch = ({x, y, d, en, setQ}) => {
+export const DLatch = ({x, y, d, en, setQ, setNotQ}) => {
 	
 	const [realQ, setRealQ] = useState(false);
 	
@@ -16,7 +16,8 @@ export const DLatch = ({x, y, d, en, setQ}) => {
 	
 	useEffect(() => {
 		setQ(realQ);
-	}, [realQ, setQ]);
+		setNotQ?.(!realQ);
+	}, [realQ, setQ, setNotQ]);
 	
 	return <Block title="D Latch" x={x} y={y} width={100} height={80}>
 		<BlockLabel x={10} y={25} on={d}>D</BlockLabel>

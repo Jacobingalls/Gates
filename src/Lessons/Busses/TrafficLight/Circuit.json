@@ -4,12 +4,11 @@
 	"size": [470, 140],
 	"instances": [
 		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 50], "props": { "keyboard": "1" } },
-		{ "id": "bus_1", "component": "Bus", "props": { "path": "M295,70 h105", "label": { "x": 350, "y": 70, "wires": 2 } } },
 		{ "id": "counter_1", "component": "Counter", "at": [155, 45], "props": { "modulo": 4 } },
 		{ "id": "traffic_light_1", "component": "TrafficLight", "at": [400, 20] }
 	],
 	"nets": [
 		{ "id": "clock", "connect": ["button_1.output", "counter_1.clk"], "route": [[[50, 70], [155, 70]]] },
-		{ "id": "value", "connect": ["counter_1.setValue", "traffic_light_1.value"] }
+		{ "id": "value", "connect": ["counter_1.setValue", "traffic_light_1.value"], "width": 2, "route": [[[295, 70], [400, 70]]], "tick": [350, 70] }
 	]
 }

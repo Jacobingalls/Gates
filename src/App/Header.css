@@ -23,3 +23,45 @@
 	color: #fff;
 	text-decoration: none;
 }
+
+.app-header .header-links {
+	display: flex;
+	flex-direction: row;
+	gap: 20px;
+}
+
+.app-header .header-links a {
+	color: #ccd;
+	text-decoration: none;
+}
+
+.app-header .header-links a:hover {
+	color: #fff;
+}
+
+.app-header.thin .header-wrapper {
+	box-sizing: border-box;
+	align-items: center;
+	max-width: none;
+	height: 30px;
+	padding: 0 12px;
+}
+
+.app-header.thin .header-wrapper h1 {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1;
+}
+
+.app-header.thin .header-wrapper h1 a {
+	font-size: 15px;
+}
+
+.app-header.thin .header-links {
+	align-items: center;
+}
+
+.app-header.thin .header-links a {
+	font-size: 13px;
+	line-height: 1;
+}

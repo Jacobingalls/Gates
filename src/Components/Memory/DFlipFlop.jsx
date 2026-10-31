@@ -2,7 +2,7 @@ import {useState, useEffect} from "react";
 
 import { Block, BlockLabel, InvertedBlockLabel } from "../Block"
 
-export const DFlipFlop = ({x, y, d, clk, setQ}) => {
+export const DFlipFlop = ({x, y, d, clk, setQ, setNotQ}) => {
 	
 	const [nextQ, setNextQ] = useState(false);
 	const [currentQ, setCurrentQ] = useState(false);
@@ -17,6 +17,10 @@ export const DFlipFlop = ({x, y, d, clk, setQ}) => {
 			setQ(nextQ)
 		}
 	}, [d, clk, nextQ, setQ]);
+	
+	useEffect(() => {
+		setNotQ?.(!currentQ);
+	}, [currentQ, setNotQ]);
 	
 	return <Block title="D Flip-Flop" x={x} y={y} width={100} height={80}>
 		<BlockLabel x={10} y={25} on={d}>D</BlockLabel>
