@@ -4,6 +4,7 @@ import classNames from "classnames";
 
 export const SEVEN_SEGMENT_SIZE = [50, 80]
 export const SMALL_SCALE = .5
+const POINT = { cx: 46, cy: 73, r: 3 }
 
 // Segments a to g, clockwise from the top, with g across the middle.
 const SEGMENTS = [
@@ -23,8 +24,9 @@ const HEX_DIGITS = [
 
 export const hexSegments = (value) => SEGMENTS.map((_, i) => ((HEX_DIGITS[value] >> (6 - i)) & 1) === 1)
 
-// `color` lights the segments in place of the usual red.
-export const SevenSegment = ({x, y, segments, scale = 1, color}) => {
+// `color` lights the segments in place of the usual red. `point` is the decimal point, which
+// isn't drawn at all if it's left out, for faces that have no use for one.
+export const SevenSegment = ({x, y, segments, scale = 1, color, point}) => {
 	return <g transform={`translate(${x},${y}) scale(${scale})`}>
 		<rect className="seven-segment" width={SEVEN_SEGMENT_SIZE[0]} height={SEVEN_SEGMENT_SIZE[1]} rx="4" />
 		{SEGMENTS.map((d, i) => {
@@ -36,5 +38,10 @@ export const SevenSegment = ({x, y, segments, scale = 1, color}) => {
 				style={lit && color !== undefined ? { fill: color } : undefined}
 			/>
 		})}
+		{point !== undefined && <circle
+			{...POINT}
+			className={classNames("segment", {"on": point})}
+			style={point && color !== undefined ? { fill: color } : undefined}
+		/>}
 	</g>
 }

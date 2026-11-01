@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 
 import { pinLabel, pinsFor, terminalName } from "../Circuits/parts"
+import { STATE_RADIUS, automaticLabel, radiusOf } from "../Circuits/stateGeometry"
 import { Field } from "./Fields"
 import {
 	addAssertion, addConnection, addConstant, assertionTargets, conditionSources, connectionSources, connectionTargets, fitsPin, moveAssertion, removeAssertion,
 	removeConnection, removeConstant, renameConstant, setAssertion, setConstantValue, setGuard, setMachineType,
-	updateConnection, updateState,
+	updateConnection, updateState, updateTransition,
 } from "./stateMachine"
 import {
 	MAX_INPUTS, MAX_OUTPUTS, addVariable, addVariableBus, bindBus, bindPin, busesOn, removeVariable, renameBus,
@@ -13,6 +14,8 @@ import {
 } from "./variables"
 
 const LIMITS = { inputs: MAX_INPUTS, outputs: MAX_OUTPUTS }
+
+const RADIUS_RANGE = { min: 20, max: 80, step: 2 }
 
 const NEW_BUS = "new"
 
@@ -348,6 +351,30 @@ export const StatePanel = ({ doc, state, apply }) => {
 				onChange={(event) => apply((current) => updateState(current, state.id, { name: event.target.value }))}
 			/>
 		</Field>
+		<Field label="Size">
+			<input
+				type="range"
+				aria-label="State size"
+				{...RADIUS_RANGE}
+				value={radiusOf(state)}
+				onChange={(event) => {
+					const radius = Number(event.target.value)
+					apply((current) => updateState(current, state.id, { radius: radius === STATE_RADIUS ? undefined : radius }))
+				}}
+			/>
+		</Field>
+		<Field label="Summary">
+			<textarea
+				aria-label="State summary"
+				rows={3}
+				placeholder="What this state means"
+				value={state.summary ?? ""}
+				onChange={(event) => {
+					const summary = event.target.value === "" ? undefined : event.target.value
+					apply((current) => updateState(current, state.id, { summary }))
+				}}
+			/>
+		</Field>
 		<button
 			type="button"
 			disabled={doc.initial === state.id}
@@ -409,6 +436,25 @@ export const TransitionPanel = ({ doc, transition, apply }) => {
 	return <>
 		<h2>Transition</h2>
 		<p className="editor-id">{name(transition.from)} → {name(transition.to)}</p>
+		<Field label="Label">
+			<textarea
+				aria-label="Transition label"
+				rows={2}
+				placeholder={automaticLabel(doc, transition)}
+				value={transition.label ?? ""}
+				onChange={(event) => {
+					const label = event.target.value === "" ? undefined : event.target.value
+					apply((current) => updateTransition(current, transition.id, { label }))
+				}}
+			/>
+		</Field>
+		<button
+			type="button"
+			disabled={transition.curve === undefined && transition.labelOffset === undefined}
+			onClick={() => apply((current) => updateTransition(current, transition.id, { curve: undefined, labelOffset: undefined }))}
+		>
+			Reset Line and Label Position
+		</button>
 		<h3>Taken When</h3>
 		{conditionSources(doc).map(({ terminal, pin }) => {
 			const Condition = pin.bus ? BusCondition : WireCondition

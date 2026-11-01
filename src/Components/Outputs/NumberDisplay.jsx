@@ -16,7 +16,9 @@ export const numberDisplayShape = ({ width, small }) => {
 }
 
 // One digit per decimal place of the bus, reading left to right, top digit first.
-export const NumberDisplay = ({ x, y, value, width, small, color }) => {
+// `decimalPlaces` puts a point that many digits in from the right, and it only shows the
+// number differently: `value` is the same either way.
+export const NumberDisplay = ({ x, y, value, width, small, color, decimalPlaces }) => {
 	const digits = toBcd(value ?? 0, digitCount(width))
 	const scale = small ? SMALL_SCALE : 1
 	
@@ -29,6 +31,7 @@ export const NumberDisplay = ({ x, y, value, width, small, color }) => {
 			scale={scale}
 			color={color}
 			segments={hexSegments(digit)}
+			point={i === decimalPlaces && i > 0 ? true : undefined}
 		/>
 	})
 }

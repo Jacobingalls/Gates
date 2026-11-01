@@ -36,7 +36,7 @@ const TOOLS = {
 const RUNNERS = {
 	circuit: (doc) => <CircuitDiagram circuit={doc} />,
 	truthTable: (doc) => <TruthTableDiagram table={doc} />,
-	stateMachine: (doc) => <StateMachineDiagram machine={doc} />,
+	stateMachine: (doc) => <StateMachineDiagram machine={doc} cards />,
 }
 
 const REVOKE_DELAY = 10000

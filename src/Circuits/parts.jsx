@@ -20,8 +20,9 @@ import { Register, registerShape } from "../Components/Memory/Register"
 import { EightBitShiftRegister } from "../Components/Memory/ShiftRegisters"
 import { SRLatch } from "../Components/Memory/SRLatch"
 import { ToggleLatch } from "../Components/Memory/ToggleLatch"
-import { Clock } from "../Components/Timing/Clock"
+import { Clock, clockShape } from "../Components/Timing/Clock"
 import { Countdown, countdownShape } from "../Components/Timing/Countdown"
+import { PedestrianController, pedestrianControllerShape } from "../Components/Timing/PedestrianController"
 import { SPEAKER_SIZE, Speaker } from "../Components/Outputs/Speaker"
 import { WalkLight, walkLightShape } from "../Components/Outputs/WalkLight"
 import { Demux, Mux, demuxShape, muxShape } from "../Components/Math/Mux"
@@ -35,11 +36,11 @@ const SEGMENT_NAMES = ["a", "b", "c", "d", "e", "f", "g"]
 
 const HEX_BITS = ["d8", "d4", "d2", "d1"]
 
-const SevenSegmentPart = ({ x, y, mode, small, color, ...bits }) => {
+const SevenSegmentPart = ({ x, y, mode, small, color, point, ...bits }) => {
 	const isOn = (name) => bits[name] === true
 	const number = HEX_BITS.reduce((total, name) => total * 2 + (isOn(name) ? 1 : 0), 0)
 	const segments = mode === "hex" ? hexSegments(number) : SEGMENT_NAMES.map(isOn)
-	return <SevenSegment x={x} y={y} segments={segments} scale={small ? SMALL_SCALE : 1} color={color} />
+	return <SevenSegment x={x} y={y} segments={segments} scale={small ? SMALL_SCALE : 1} color={color} point={point === true} />
 }
 
 const gatePins = { input1: input(10, 15), input2: input(10, 35), output: output(50, 25) }
@@ -80,9 +81,14 @@ const SMALL_SEVEN_SEGMENT_MODES = {
 	hex: { title: "Hex Number", bank: smallBank(hexBank) },
 }
 
+// The decimal point is on its own pin, beside it on the right, whichever input the part takes.
+const pointPin = (scale) => ({
+	point: { ...input(SEVEN_SEGMENT_SIZE[0] * scale, 70 * scale), optional: true, label: () => "Decimal Point" },
+})
+
 const sevenSegmentShape = ({ small }) => small
-	? { size: SEVEN_SEGMENT_SIZE.map((length) => length * SMALL_SCALE), modes: SMALL_SEVEN_SEGMENT_MODES }
-	: { size: SEVEN_SEGMENT_SIZE, modes: SEVEN_SEGMENT_MODES }
+	? { size: SEVEN_SEGMENT_SIZE.map((length) => length * SMALL_SCALE), modes: SMALL_SEVEN_SEGMENT_MODES, pins: pointPin(SMALL_SCALE) }
+	: { size: SEVEN_SEGMENT_SIZE, modes: SEVEN_SEGMENT_MODES, pins: pointPin(1) }
 
 const speakerShape = ({ small }) => {
 	const [width, height] = SPEAKER_SIZE.map((length) => length * (small ? SMALL_SCALE : 1))
@@ -141,15 +147,16 @@ export const PARTS = {
 	},
 	Clock: {
 		title: "Clock", Component: Clock, category: "Timing", icon: "clock", keywords: "oscillator frequency duty cycle pulse enable disable",
-		size: [140, 50], defaults: { frequency: 1, duty: 50, controlType: "enable" },
-		pins: {
-			control: { ...input(0, 25), optional: true, label: ({ props }) => props?.controlType === "disable" ? "Disable" : "Enable" },
-			output: { ...output(140, 25), clock: true },
-		},
+		sized: clockShape, defaults: { frequency: 1, duty: 50, controlType: "enable" },
 	},
 	Countdown: {
 		title: "Countdown", Component: Countdown, category: "Timing", keywords: "down counter timer load zero reset clock",
 		sized: countdownShape, defaults: { width: 7 },
+	},
+	PedestrianController: {
+		title: "Pedestrian Controller", Component: PedestrianController, category: "Timing",
+		keywords: "crossing walk wait light traffic signal timer request state machine",
+		sized: pedestrianControllerShape, defaults: { width: 7, walkTime: 5, flashTime: 8 },
 	},
 	NumberDisplay: {
 		title: "Number Display", Component: NumberDisplay, category: "Inputs & Outputs", icon: "sevenSegment",

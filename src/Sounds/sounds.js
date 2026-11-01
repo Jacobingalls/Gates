@@ -43,8 +43,6 @@ export const soundLength = (name) => {
 }
 
 const SAMPLE_RATE = 44100
-const PEAK = 32767
-const HEADER_BYTES = 44
 
 const waveAt = (type, phase) => {
 	const position = phase % 1
@@ -59,7 +57,7 @@ const mixTone = (samples, { at, duration, frequency, to = frequency, type, level
 	const first = Math.round(at * SAMPLE_RATE)
 	const count = Math.round(duration * SAMPLE_RATE)
 	let phase = 0
-	
+
 	for (let i = 0; i < count; i += 1) {
 		const progress = i / count
 		phase += (frequency + (to - frequency) * progress) / SAMPLE_RATE
@@ -67,198 +65,113 @@ const mixTone = (samples, { at, duration, frequency, to = frequency, type, level
 	}
 }
 
-const text = (view, at, value) => [...value].forEach((letter, i) => view.setUint8(at + i, letter.charCodeAt(0)))
+// Web Audio rather than audio elements: in WebKit, an element's play() can block the page on
+// the GPU process, for a moment or for good. One context also keeps a looped clip gapless.
+let context = null
 
-const toWav = (samples) => {
-	const dataBytes = samples.length * 2
-	const view = new DataView(new ArrayBuffer(HEADER_BYTES + dataBytes))
-	
-	text(view, 0, "RIFF")
-	view.setUint32(4, HEADER_BYTES - 8 + dataBytes, true)
-	text(view, 8, "WAVEfmt ")
-	view.setUint32(16, 16, true)
-	view.setUint16(20, 1, true)
-	view.setUint16(22, 1, true)
-	view.setUint32(24, SAMPLE_RATE, true)
-	view.setUint32(28, SAMPLE_RATE * 2, true)
-	view.setUint16(32, 2, true)
-	view.setUint16(34, 16, true)
-	text(view, 36, "data")
-	view.setUint32(40, dataBytes, true)
-	samples.forEach((sample, i) => view.setInt16(HEADER_BYTES + i * 2, Math.max(-1, Math.min(1, sample)) * PEAK, true))
-	
-	return new Blob([view], { type: "audio/wav" })
+const audio = () => {
+	context = context ?? new AudioContext()
+	return context
 }
 
-// Tones are rendered to a WAV rather than played through Web Audio, which Safari can report
-// as running while staying silent. An audio element works everywhere.
+const buffers = {}
+const decoding = {}
+
 const renderTones = (name) => {
-	const samples = new Float32Array(Math.ceil(soundLength(name) * SAMPLE_RATE))
-	SOUNDS[name].tones.forEach((tone) => mixTone(samples, tone))
-	return URL.createObjectURL(toWav(samples))
+	const buffer = audio().createBuffer(1, Math.ceil(soundLength(name) * SAMPLE_RATE), SAMPLE_RATE)
+	SOUNDS[name].tones.forEach((tone) => mixTone(buffer.getChannelData(0), tone))
+	return buffer
 }
 
-const PLAYERS_PER_SOUND = 3
-const players = {}
-let recordings = null
-let loadingRecordings = null
-
-const loadRecordings = () => {
-	loadingRecordings = loadingRecordings ?? import("./recordings").then(({ RECORDINGS }) => {
-		recordings = RECORDINGS
+// A recording isn't ready until it's decoded, which is why a Speaker asks ahead of time.
+const decodeRecording = (name) => {
+	decoding[name] = decoding[name] ?? import("./recordings").then(async ({ RECORDINGS }) => {
+		const response = await fetch(RECORDINGS[SOUNDS[name].file])
+		buffers[name] = await audio().decodeAudioData(await response.arrayBuffer())
 	})
-	return loadingRecordings
 }
 
-// Rewinding goes on after a sound finishes, away from the next play. Asking a player to seek
-// and play at once is what makes Safari start late, or not at all.
-const rest = (player) => {
-	player.pause()
-	if (player.currentTime === 0) {
-		player.idle = true
+const bufferFor = (name) => {
+	if (SOUNDS[name].file === undefined) {
+		buffers[name] = buffers[name] ?? renderTones(name)
+	}
+	return buffers[name]
+}
+
+const startSource = (buffer, volume, loop = false) => {
+	const source = audio().createBufferSource()
+	const gain = audio().createGain()
+
+	gain.gain.value = volume / 100
+	source.buffer = buffer
+	source.loop = loop
+	source.connect(gain).connect(audio().destination)
+	source.start()
+	return source
+}
+
+let pressed = false
+
+// Browsers only start audio during a press, and most sounds here start later, from a clock
+// or a state. So the first press resumes the context and plays a silent sample, which is
+// what Safari needs to really make sound rather than just report that it's running. Sounds
+// wait for that press, or they'd all come out at once when it happened. Safari can also
+// interrupt a context later, so a press wakes it again.
+const wake = () => {
+	if (pressed && context.state === "running") {
 		return
 	}
-	player.onseeked = () => {
-		player.onseeked = null
-		player.idle = true
-	}
-	player.currentTime = 0
-}
 
-const createPlayer = (name, source) => {
-	const player = new Audio(source)
-	player.dataset.sound = name
-	player.preload = "auto"
-	player.idle = true
-	player.onended = () => rest(player)
-	player.load()
-	return player
-}
-
-const sources = {}
-
-const sourceFor = (name) => {
-	const { file } = SOUNDS[name]
-	sources[name] = sources[name] ?? (file === undefined ? renderTones(name) : recordings[file])
-	return sources[name]
-}
-
-const playersFor = (name) => {
-	if (SOUNDS[name].file !== undefined && recordings === null) {
-		return []
-	}
-	
-	if (players[name] === undefined) {
-		const source = sourceFor(name)
-		players[name] = Array.from({ length: PLAYERS_PER_SOUND }, () => createPlayer(name, source))
-	}
-	return players[name]
-}
-
-const unlocked = new Set()
-
-// Safari only lets an audio element play on its own once it has played during a press, and
-// most sounds here start later, from a clock or a state. So the first press plays each one
-// silently, and a press that doesn't count as a gesture just leaves it for the next. It
-// stays muted until it's asked to play, because Safari can sound it if unmuted any sooner.
-const unlock = (player) => {
-	if (unlocked.has(player)) {
-		return
-	}
-	
-	unlocked.add(player)
-	player.muted = true
-	player.play().then(() => {
-		if (player.idle) {
-			rest(player)
-		}
-	}).catch(() => unlocked.delete(player))
-}
-
-const LOOP_REPEATS = 30
-const loopers = {}
-
-const chunkName = (view, at) => String.fromCharCode(...[0, 1, 2, 3].map((i) => view.getUint8(at + i)))
-
-// Where a WAV's audio is, past whatever other chunks come before it.
-const findData = (view) => {
-	let at = 12
-	while (chunkName(view, at) !== "data") {
-		at += 8 + view.getUint32(at + 4, true)
-	}
-	return { start: at + 8, size: view.getUint32(at + 4, true) }
-}
-
-// One long WAV of the same clip over and over. A looping player leaves a small gap at each
-// repeat, and this has no repeats to leave a gap at until the very end.
-const repeatedWav = (buffer) => {
-	const { start, size } = findData(new DataView(buffer))
-	const bytes = new Uint8Array(start + size * LOOP_REPEATS)
-	const clip = new Uint8Array(buffer, start, size)
-	bytes.set(new Uint8Array(buffer, 0, start))
-	for (let i = 0; i < LOOP_REPEATS; i += 1) {
-		bytes.set(clip, start + size * i)
-	}
-	
-	const view = new DataView(bytes.buffer)
-	view.setUint32(4, bytes.length - 8, true)
-	view.setUint32(start - 4, size * LOOP_REPEATS, true)
-	return new Blob([bytes], { type: "audio/wav" })
-}
-
-export const prepareLoop = async (name) => {
-	await loadRecordings()
-	if (loopers[name] === undefined) {
-		loopers[name] = null
-		const buffer = await (await fetch(sourceFor(name))).arrayBuffer()
-		loopers[name] = createPlayer(name, URL.createObjectURL(repeatedWav(buffer)))
-		loopers[name].loop = true
-		loopers[name].dataset.looping = "true"
-	}
-}
-
-export const startLoop = (name, volume = 100) => {
-	const player = loopers[name]
-	if (player) {
-		player.idle = false
-		player.volume = volume / 100
-		player.muted = false
-		player.play().catch(() => rest(player))
-	}
-}
-
-export const stopLoop = (name) => {
-	if (loopers[name]) {
-		rest(loopers[name])
-	}
-}
-
-const unlockAll = () => {
-	Object.keys(SOUNDS).forEach((name) => playersFor(name).forEach(unlock))
-	Object.values(loopers).filter(Boolean).forEach(unlock)
+	pressed = true
+	context.resume()
+	startSource(context.createBuffer(1, 1, SAMPLE_RATE), 0)
 }
 
 const PRESSES = ["pointerdown", "mousedown", "mouseup", "click", "touchend", "keydown", "keyup"]
 
-// Every sound is loaded as soon as a Speaker appears, so it's ready before anyone presses.
-export const prepareAudio = () => {
-	PRESSES.forEach((press) => window.addEventListener(press, unlockAll, { capture: true }))
-	loadRecordings().then(() => Object.keys(SOUNDS).forEach(playersFor))
+// A Speaker gets its own sound ready as soon as it appears, before anyone presses.
+export const prepareAudio = (name) => {
+	audio()
+	PRESSES.forEach((press) => window.addEventListener(press, wake, { capture: true }))
+	if (SOUNDS[name].file !== undefined) {
+		decodeRecording(name)
+	}
 }
 
-// `volume` is a percent, so sounds can be balanced against each other.
+const VOICES_PER_SOUND = 3
+const voices = {}
+
+// `volume` is a percent, so sounds can be balanced against each other. A sound retriggered
+// faster than it finishes cuts off its oldest voice, rather than piling up and getting loud.
 export const playSound = (name, volume = 100) => {
-	const pool = playersFor(name)
-	const player = pool.find(({ idle }) => idle) ?? pool[0]
-	if (player === undefined) {
+	const buffer = bufferFor(name)
+	if (!pressed || buffer === undefined) {
 		return
 	}
-	
-	player.volume = volume / 100
-	if (!player.idle) {
-		player.currentTime = 0
+
+	voices[name] = voices[name] ?? []
+	if (voices[name].length === VOICES_PER_SOUND) {
+		voices[name].shift().stop()
 	}
-	player.idle = false
-	player.muted = false
-	player.play().catch(() => rest(player))
+
+	const source = startSource(buffer, volume)
+	source.onended = () => {
+		voices[name] = voices[name].filter((voice) => voice !== source)
+	}
+	voices[name].push(source)
+}
+
+const loops = {}
+
+export const stopLoop = (name) => {
+	loops[name]?.stop()
+	delete loops[name]
+}
+
+export const startLoop = (name, volume = 100) => {
+	const buffer = bufferFor(name)
+	stopLoop(name)
+	if (pressed && buffer !== undefined) {
+		loops[name] = startSource(buffer, volume, true)
+	}
 }

@@ -202,8 +202,14 @@ is high. The first 30 repeats have no gaps at all, and there's a small gap each 
 
 `props.small` draws the Speaker at half size, 25×25.
 
-The clips are in `src/Sounds/sounds.js`. Most are lists of tones, rendered to WAV in the browser and played
-through an audio element. A recording goes in `src/Sounds` and is imported in `recordings.js`. To add one, add an entry to `SOUNDS`:
+Only one module on the site makes sound at a time, set with the speaker button in its section's header and
+remembered between visits. Turning one on turns off whichever had it, and turning it off leaves none. To add
+a module, list it in `SOUND_MODULES` in `src/Sounds/soundModules.js`, put `<SoundToggle module="its-id" />` in
+its header, and wrap its diagram in `<SoundModule.Provider value="its-id">`. A Speaker outside a module, as in
+the editor, always plays.
+
+The clips are in `src/Sounds/sounds.js`. Most are lists of tones, rendered in the browser and played
+through Web Audio. A recording goes in `src/Sounds` and is imported in `recordings.js`. To add one, add an entry to `SOUNDS`:
 
 | Sound | Use |
 | --- | --- |
@@ -229,7 +235,11 @@ The Clock (`Clock`) starts high and repeats on its own. Its `props` are:
 - `frequency`: cycles per second, and any number above 0.
 - `duty`: the percent of each cycle spent high. The side panel takes 1 to 99.
 - `controlType`: what the `control` pin does. `enable` runs while it's high, and `disable` stops while
-  it's high.
+  it's high. `always` has no `control` pin and never stops.
+
+`props.restartable`, the side panel's Restart setting, adds a `restart` pin and a row to the block. A rising
+edge on it starts the cycle over: the output drops briefly, then rises afresh, so what it drives sees a new
+edge even if it was already high. It does nothing while stopped.
 
 With nothing on `control` it just runs. While stopped its `output` is low, and it starts a fresh cycle
 when it's allowed to run again. It stands still in the editor and runs in Run and in lessons. A browser can
@@ -237,6 +247,23 @@ only carry so many edges through a circuit each second, so past that point the c
 instead of skipping edges. Single edges can land slightly off, but the rate holds.
 
 In a state machine, a Clock dropped in drives the Machine Clock, so it steps the machine.
+
+### Pedestrian Controller
+
+The Pedestrian Controller (`PedestrianController`) is the Pedestrian Crossing lesson's state machine as one
+part. Everything it times is counted inside it from one input, `clk`, which should be a 10 Hz Clock, and it
+stands still until that runs.
+
+- `request` latches a walk request, shown on `setRequested` until the walk sign comes on.
+- `start` begins a cycle if a request is latched, and is dropped if not.
+- `walkSeconds` and `flashSeconds` are buses of `props.width` bits, read as each phase starts. With nothing
+  on them, or at 0, `props.walkTime` and `props.flashTime` apply, which are 5 and 8.
+
+`setWalk`, `setWait`, `setShowTime` and `setTime` go to a Walk Light of the same `width`, and `setHold` holds
+cross traffic. `setWalkSign`, `setWaitSpeech`, `setLocator` and `setPerc` each go to a Speaker's `start`. `setPerc` is high
+through Walk, so a Demux can send it to one of several walk sounds, as the lesson's does for each direction. The last two kinds of sound repeat on their own: the wait speech every 5 s while a request is latched,
+starting over at each press of `request`, and the locator every 5 s at rest and every second during Flashing Hand and Buffer. A cycle is Walk Sign On for
+2 s, Walk, Flashing Hand and then Buffer for 2 s. Every pin is optional.
 
 ### Pins on a bus
 
@@ -256,6 +283,11 @@ pin. `"bused"` on an instance lists which ones, and the rest stay separate:
 
 The Seven Segment's `mode` goes in `props`. Segments lights each segment directly, and Hex Number shows
 a number from 0 to F.
+
+A Seven Segment's decimal point has its own optional pin, `point`, whichever mode it's in. `props.point` set
+to `true` lights it with nothing connected. A Number Display's `props.decimalPlaces` puts a lit point that many
+digits in from the right, in the side panel's Decimal setting. It only changes how the number is shown, so a
+`value` of 123 with one place reads 12.3.
 
 The Seven Segment and Number Display also take `props.small`, which draws them at half size, and
 `props.color`, a `#rrggbb` color for the lit segments in place of the usual red.
@@ -386,10 +418,17 @@ There are no variables. Everything names part pins directly, as `instance.prop`.
   constant, as `{ "op": "<", "value": 10 }`, and `op` is `<`, `<=`, `=`, `!=`, `>=` or `>`. Transitions are
   tried in order and the first that matches is taken. Outputs left out are don't-cares, and if nothing
   matches, the state holds.
+- `label` replaces the text a transition shows, which otherwise says what it tests, and can have several
+  lines. `curve` bends its line,
+  as `[x, y]` from the middle of the line between its states, and `labelOffset` moves its label from the
+  middle of the line. In the editor, select a transition and drag its handle or its label.
 - `constants` name numbers, for bus inputs, so a state can say what it means. Changing one changes
   everything that uses it.
 
-`at` is the centre of a state.
+`at` is the centre of a state, and `radius` is its size, 30 unless set. A state's name wraps and shrinks to
+fit inside it. `summary` is optional text saying what a state means, shown
+under it in place of what it asserts. In the editor, hovering over a state with a summary opens a card
+listing its assertions. While the machine runs, clicking any state jumps the machine there.
 
 Sections show these with `<TruthTableDiagram table={table} />` and
 `<StateMachineDiagram machine={machine} />`.

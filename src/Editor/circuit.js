@@ -1,7 +1,7 @@
 import { PARTS, boxOf, extentOf, pinPoint, pinsFor, shapeOf } from "../Circuits/parts"
 import { pruneMachine, renameTerminals } from "./stateMachine"
 import { tableBox } from "./truthTable"
-import { STATE_RADIUS, stateAt, transitionAt } from "../Circuits/stateGeometry"
+import { radiusOf, stateAt, transitionAt, transitionLabelAt, transitionShape } from "../Circuits/stateGeometry"
 import { busTick, pointOf } from "../Circuits/wirePath"
 
 export const GRID = 5
@@ -140,16 +140,17 @@ export const updateInstance = (doc, id, change) => {
 }
 
 // A new mode or bus can remove a pin, move it or change its size, and whatever was
-// on it comes off. The rest stays connected.
-export const reconfigureInstance = (doc, id, change) => {
+// on it comes off. The rest stays connected. Pins named in `follows` are the same pin
+// wherever they end up, so their wires go with them.
+export const reconfigureInstance = (doc, id, change, follows = []) => {
 	const before = doc.instances.find((instance) => instance.id === id)
 	const { bused, ...others } = change
 	const { bused: _, ...kept } = before
 	const after = { ...kept, ...others, ...(bused === undefined ? {} : { bused }) }
 	
 	const [old, next] = [pinsFor(before), pinsFor(after)]
-	const survives = (prop) => next[prop] !== undefined && same(next[prop].at, old[prop].at)
-		&& next[prop].width === old[prop].width
+	const survives = (prop) => follows.includes(prop)
+		|| (next[prop] !== undefined && same(next[prop].at, old[prop].at) && next[prop].width === old[prop].width)
 	const stays = (terminal) => {
 		const [owner, prop] = terminal.split(".")
 		return owner !== id || survives(prop)
@@ -166,7 +167,13 @@ export const reconfigureInstance = (doc, id, change) => {
 			}
 			return { ...after, bind: Object.fromEntries(Object.entries(after.bind).filter(([prop]) => survives(prop))) }
 		}),
-		nets: doc.nets.map((net) => ({ ...net, connect: net.connect.filter(stays) })),
+		nets: doc.nets.map((net) => {
+			const kept = { ...net, connect: net.connect.filter(stays) }
+			return follows.reduce((current, prop) => {
+				const onPin = current.connect.includes(`${id}.${prop}`)
+				return onPin ? followPin(current, pinPoint(before, prop), pinPoint(after, prop)) : current
+			}, kept)
+		}),
 	})
 }
 
@@ -344,7 +351,11 @@ const insideBox = ([left, top, right, bottom], [x1, y1, x2, y2]) => {
 
 const pointInBox = ([x, y], box) => insideBox([x, y, x, y], box)
 
-const stateBox = ({ at: [x, y] }) => [x - STATE_RADIUS, y - STATE_RADIUS, x + STATE_RADIUS, y + STATE_RADIUS]
+const stateBox = (state) => {
+	const [x, y] = state.at
+	const radius = radiusOf(state)
+	return [x - radius, y - radius, x + radius, y + radius]
+}
 
 // The corners of a net inside a box, leaving out any end that's on a pin or a bus:
 // those belong to what they're connected to.
@@ -1064,6 +1075,15 @@ export const hitTest = (doc, point, selection) => {
 		}
 	}
 	
+	const curved = selection.length === 1 && selection[0].kind === "transition"
+		&& doc.transitions.find((transition) => transition.id === selection[0].id)
+	if (curved) {
+		const [x, y] = transitionShape(doc, curved).handle
+		if (Math.hypot(x - point[0], y - point[1]) <= HANDLE_SNAP) {
+			return { kind: "curve", id: curved.id }
+		}
+	}
+	
 	const placed = pointAt(doc, point)
 	if (placed !== undefined) {
 		return { kind: "point", ...placed }
@@ -1104,6 +1124,11 @@ export const hitTest = (doc, point, selection) => {
 	const segment = segmentHit(doc, point, WIRE_SNAP)
 	if (segment !== undefined) {
 		return { kind: "net", id: segment.net, ...segment }
+	}
+	
+	const labelled = doc.transitions && transitionLabelAt(doc, point)
+	if (labelled) {
+		return { kind: "transitionLabel", id: labelled.id }
 	}
 	
 	const transition = doc.transitions && transitionAt(doc, point)

@@ -13,6 +13,74 @@
 	fill: #fff;
 }
 
+.machine-label-back {
+	fill: var(--machine-background, #22222f);
+	fill-opacity: .25;
+	pointer-events: none;
+}
+
+.machine-state.clickable {
+	cursor: pointer;
+}
+
+/* A state answers to its circle, not to what's drawn around it. */
+.machine-state.clickable text, .machine-state.clickable .machine-start,
+.machine-state.explained text, .machine-state.explained .machine-start {
+	pointer-events: none;
+}
+
+.machine-state.explained {
+	outline: none;
+}
+
+.machine-state.explained:focus-visible > circle {
+	stroke: #8fb4ff;
+}
+
+/* Its card opens over the caption, which would otherwise show in the gap above it. */
+.machine-state.explained:hover:not(:active) .machine-output, .machine-state.explained:focus-visible .machine-output,
+.machine-state.explained:hover:not(:active) .machine-label-back, .machine-state.explained:focus-visible .machine-label-back {
+	visibility: hidden;
+}
+
+.machine-card {
+	position: absolute;
+	z-index: 2;
+	box-sizing: border-box;
+	padding: 10px 12px;
+	border: 1px solid #55556a;
+	border-radius: 8px;
+	background: #1a1a24;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+	color: #dde;
+	font-size: 13px;
+	line-height: 1.35;
+	text-align: left;
+	pointer-events: none;
+}
+
+.machine-card::before {
+	content: "";
+	position: absolute;
+	left: var(--chevron-x);
+	top: -6px;
+	width: 10px;
+	height: 10px;
+	box-sizing: border-box;
+	border-right: 1px solid #55556a;
+	border-bottom: 1px solid #55556a;
+	background: #1a1a24;
+	transform: translateX(-50%) rotate(-135deg);
+}
+
+.machine-card ul {
+	margin: 0;
+	padding: 0;
+	color: #99a;
+	font-size: 12px;
+	list-style: none;
+}
+
 .machine-start {
 	fill: none;
 	stroke: #99a;

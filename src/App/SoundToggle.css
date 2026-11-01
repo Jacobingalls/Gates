@@ -1,0 +1,36 @@
+.sound-toggle {
+	display: inline-flex;
+	margin-left: 10px;
+	vertical-align: middle;
+	padding: 6px;
+	background: rgba(255, 255, 255, .1);
+	border: none;
+	border-radius: 10px;
+	color: #889;
+	cursor: pointer;
+}
+
+.sound-toggle:hover {
+	color: #ccd;
+}
+
+.sound-toggle.on {
+	background: rgba(200, 200, 255, .25);
+	color: #eef;
+}
+
+.sound-toggle svg {
+	display: block;
+}
+
+.sound-toggle path {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.75px;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.sound-toggle .sound-cone {
+	fill: currentColor;
+}

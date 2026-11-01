@@ -1,0 +1,20 @@
+.sound-mark path {
+	fill: none;
+	stroke: #99a;
+	stroke-width: 1.25px;
+	stroke-linecap: round;
+}
+
+.sound-mark .sound-mark-cone {
+	fill: #99a;
+	stroke: none;
+}
+
+.sound-mark.on path {
+	stroke: #dde;
+}
+
+.sound-mark.on .sound-mark-cone {
+	fill: #dde;
+	stroke: none;
+}

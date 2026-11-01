@@ -2,6 +2,10 @@ import { MACHINE_CLOCK, busedPins, outputProps, pinsFor, splitBus } from "./part
 
 export const startMachine = (machine) => ({ state: machine.initial, signals: {}, taken: null })
 
+// A click lands between clock edges, so the next edge could test transitions before what the
+// new state asserts has reached the parts, like a timer still reading 0. That edge is skipped.
+export const jumpTo = (run, state) => ({ ...run, state, taken: null, jumped: true })
+
 const clockSource = (machine) => machine.connections.find(({ to }) => to === MACHINE_CLOCK)?.from
 
 const valueOf = (machine, value) => {
@@ -40,6 +44,9 @@ export const setSignal = (machine, run, terminal, value) => {
 	const rising = terminal === clockSource(machine) && value && run.signals[terminal] !== true
 	if (!rising) {
 		return { ...run, signals }
+	}
+	if (run.jumped) {
+		return { ...run, signals, jumped: false }
 	}
 	
 	const transition = matching(machine, run.state, signals)

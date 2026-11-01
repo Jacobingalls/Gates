@@ -5,6 +5,8 @@ import { BindingPanel, MachinePanel, StatePanel, TransitionPanel, VariablesPanel
 import { bindingLabel } from "./variables"
 import { CommitField, DecimalField, Field, NameField, NumberField } from "./Fields"
 import { LutFields } from "./LutFields"
+import { digitCount } from "../Components/Math/Bcd"
+import { ALWAYS_ON } from "../Components/Timing/Clock"
 import { SOUNDS, playSound } from "../Sounds/sounds"
 import {
 	MIN_SIZE, changeId, flipInstance, flipSelection, isBus, reconfigureInstance, removeSelection, rotateInstance, rotateSelection,
@@ -186,7 +188,17 @@ const InstancePanel = ({ doc, instance, apply, onZoom, onRenameId }) => {
 			label="Modulo" value={instance.props?.modulo ?? 4} min={2}
 			onChange={(value) => setProp("modulo", value)}
 		/>}
-		{instance.component === "Clock" && <ClockFields instance={instance} setProp={setProp} />}
+		{instance.component === "Clock" && <ClockFields instance={instance} setProp={setProp} apply={apply} />}
+		{instance.component === "PedestrianController" && <>
+			<DecimalField
+				label="Walk s" value={instance.props?.walkTime ?? part.defaults.walkTime} accepts={(value) => value > 0}
+				onChange={(value) => setProp("walkTime", value)}
+			/>
+			<DecimalField
+				label="Flash s" value={instance.props?.flashTime ?? part.defaults.flashTime} accepts={(value) => value > 0}
+				onChange={(value) => setProp("flashTime", value)}
+			/>
+		</>}
 		{["SevenSegment", "NumberDisplay"].includes(instance.component) && <DisplayFields instance={instance} setProp={setProp} />}
 		{instance.component === "Speaker" && <SoundField instance={instance} setProp={setProp} />}
 		{instance.component === "Lut" && <LutFields instance={instance} part={part} apply={apply} />}
@@ -197,7 +209,17 @@ const InstancePanel = ({ doc, instance, apply, onZoom, onRenameId }) => {
 	</>
 }
 
-const ClockFields = ({ instance, setProp }) => <>
+// Goes through reconfiguring rather than `setProp`, so turning it off takes any wire off the pin.
+const setRestartable = (instance, on) => (doc) => {
+	const { restartable: _, ...others } = instance.props
+	return reconfigureInstance(doc, instance.id, { props: on ? { ...others, restartable: true } : others }, ["output"])
+}
+
+const setControlType = (instance, controlType) => (doc) => {
+	return reconfigureInstance(doc, instance.id, { props: { ...instance.props, controlType } }, ["output"])
+}
+
+const ClockFields = ({ instance, setProp, apply }) => <>
 	<DecimalField
 		label="Hz" value={instance.props.frequency} accepts={(value) => value > 0}
 		onChange={(value) => setProp("frequency", value)}
@@ -210,11 +232,20 @@ const ClockFields = ({ instance, setProp }) => <>
 		<select
 			aria-label="Control type"
 			value={instance.props.controlType}
-			onChange={(event) => setProp("controlType", event.target.value)}
+			onChange={(event) => apply(setControlType(instance, event.target.value))}
 		>
 			<option value="enable">Enable</option>
 			<option value="disable">Disable</option>
+			<option value={ALWAYS_ON}>Always On</option>
 		</select>
+	</Field>
+	<Field label="Restart">
+		<input
+			type="checkbox"
+			aria-label="Restart pin"
+			checked={instance.props.restartable === true}
+			onChange={(event) => apply(setRestartable(instance, event.target.checked))}
+		/>
 	</Field>
 </>
 
@@ -252,7 +283,26 @@ const SmallField = ({ instance, setProp }) => <Field label="Small">
 	/>
 </Field>
 
+// Picking None or a place, rather than ticking a box and then a place. A display's last digit
+// has nothing after it, so the point only goes between digits.
+const DecimalPlacesField = ({ instance, setProp }) => {
+	const places = Array.from({ length: digitCount(instance.props.width) - 1 }, (_, i) => i + 1)
+	const value = instance.props.decimalPlaces ?? 0
+	
+	return <Field label="Decimal">
+		<select
+			aria-label="Decimal places"
+			value={places.includes(value) ? value : 0}
+			onChange={(event) => setProp("decimalPlaces", Number(event.target.value))}
+		>
+			<option value={0}>None</option>
+			{places.map((place) => <option key={place} value={place}>{place} {place === 1 ? "Digit" : "Digits"} After</option>)}
+		</select>
+	</Field>
+}
+
 const DisplayFields = ({ instance, setProp }) => <>
+	{instance.component === "NumberDisplay" && <DecimalPlacesField instance={instance} setProp={setProp} />}
 	<SmallField instance={instance} setProp={setProp} />
 	<ColorField value={instance.props?.color} onChange={(color) => setProp("color", color)} />
 </>

@@ -4,11 +4,11 @@ import classNames from "classnames";
 import { PARTS, PartStubs, PlacedPart, labelText, outputProps, shownColumns } from "../Circuits/parts"
 import { TruthTableBusRow } from "../Circuits/TruthTable"
 import { BackdropLayer, LabelLayer, NetLayer, PartTag } from "../Circuits/CircuitDiagram"
-import { StateGraph } from "../Circuits/StateMachineDiagram"
-import { STATE_RADIUS, stateAt } from "../Circuits/stateGeometry"
+import { StateCard, StateGraph } from "../Circuits/StateMachineDiagram"
+import { radiusOf, stateAt, transitionShape } from "../Circuits/stateGeometry"
 import { netPath, pointOf, wirePath } from "../Circuits/wirePath"
 import { BACKDROP_ITEM, DRAG_TYPE, LABEL_ITEM, STATE_ITEM } from "./Library"
-import { addState, addTransition } from "./stateMachine"
+import { addState, addTransition, moveCurve, moveTransitionLabel } from "./stateMachine"
 import { toggleCell } from "./truthTable"
 import { useWindowEvent } from "./useWindowEvent"
 import { placeInMachine } from "./stateMachine"
@@ -27,6 +27,8 @@ const BUTTON_RAISE = 4
 const SWITCH_SIZE = [60, 35]
 const LEAVING_REACH = 6
 const NODE_REACH = 8
+const CURVE_HANDLE_RADIUS = 5
+const PARTS_OF_TRANSITION = ["curve", "transitionLabel"]
 
 const noop = () => {}
 
@@ -175,6 +177,9 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 	const [cursor, setCursor] = useState(null);
 	const [marquee, setMarquee] = useState(null);
 	const [linkFrom, setLinkFrom] = useState(null);
+	const [hoveredState, setHoveredState] = useState(null);
+	
+	useEffect(() => setHoveredState(null), [tool]);
 	
 	useEffect(() => {
 		setDraft(null)
@@ -325,6 +330,7 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 		}
 		
 		const item = hit?.kind === "net" && !wholeWire ? segmentItem(doc, hit)
+			: PARTS_OF_TRANSITION.includes(hit?.kind) ? { kind: "transition", id: hit.id }
 			: hit && hit.id !== undefined && hit.kind !== "vertex" ? { kind: hit.kind, id: hit.id } : undefined
 		const selected = item !== undefined && selection.some((other) => sameItem(other, item))
 		
@@ -437,6 +443,10 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 			preview(() => resizeFrame(base, hit.handle, delta))
 		} else if (hit.kind === "backdrop") {
 			preview(() => resizeBackdrop(base, hit.id, hit.handle, delta))
+		} else if (hit.kind === "curve") {
+			preview(() => moveCurve(base, hit.id, delta))
+		} else if (hit.kind === "transitionLabel") {
+			preview(() => moveTransitionLabel(base, hit.id, delta))
 		}
 	}
 	
@@ -574,6 +584,10 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 	const onlyBackdrop = selection.length === 1 && selection[0].kind === "backdrop"
 		&& doc.backdrops?.find((backdrop) => backdrop.id === selection[0].id)
 	const linkState = doc.states?.find((state) => state.id === linkFrom)
+	const explaining = tool === "select" && dragRef.current === null
+		&& doc.states?.find((state) => state.id === hoveredState)
+	const curved = selection.length === 1 && selection[0].kind === "transition"
+		&& doc.transitions.find((transition) => transition.id === selection[0].id)
 	const selectedStates = doc.states?.filter((state) => selectedIds("state").includes(state.id)) ?? []
 	const wireOfSegment = selection.length === 1 && selection[0].kind === "segment"
 		&& doc.nets.find((net) => net.id === selection[0].id)
@@ -613,6 +627,7 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 						machine={doc}
 						activeState={linkFrom}
 						activeTransition={selectedIds("transition")[0]}
+						explain={tool === "select" ? { setHovered: setHoveredState } : undefined}
 					/>}
 					{doc.kind === "circuit" && doc.instances.map((instance) => {
 						return <PartStubs key={instance.id} instance={instance} nets={doc.nets} />
@@ -671,8 +686,13 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 						className="editor-point-preview"
 						cx={pointTarget[0]} cy={pointTarget[1]} r={4}
 					/>}
-					{selectedStates.map(({ id, at }) => {
-						return <circle key={id} className="editor-state-selection" cx={at[0]} cy={at[1]} r={STATE_RADIUS + 5} />
+					{curved && <circle
+						className="editor-handle"
+						cx={transitionShape(doc, curved).handle[0]} cy={transitionShape(doc, curved).handle[1]}
+						r={CURVE_HANDLE_RADIUS}
+					/>}
+					{selectedStates.map((state) => {
+						return <circle key={state.id} className="editor-state-selection" cx={state.at[0]} cy={state.at[1]} r={radiusOf(state) + 5} />
 					})}
 					{linkState && cursor && <path
 						className="editor-draft"
@@ -688,6 +708,7 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 			</svg>
 			
 			{doc.at && <TableOnCanvas table={doc} selected={selectedIds("table").length > 0} apply={apply} />}
+			{explaining && <StateCard machine={doc} state={explaining} origin={ORIGIN} />}
 		</div>
 	</div>
 }

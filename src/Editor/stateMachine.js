@@ -1,4 +1,5 @@
 import { MACHINE_CLOCK, bankOf, busedPins, pinsFor } from "../Circuits/parts"
+import { curveOf, curvePull, transitionShape } from "../Circuits/stateGeometry"
 import { snapPoint } from "./circuit"
 
 export const blankMachine = () => ({
@@ -39,6 +40,30 @@ export const addState = (doc, at) => {
 }
 
 export const updateState = (doc, id, change) => updateList(doc, "states", id, change)
+
+export const updateTransition = (doc, id, change) => updateList(doc, "transitions", id, change)
+
+const CURVE_STEPS = 4
+
+// Bending a line also slides where it leaves its states, so the handle doesn't move in step
+// with its curve. A few corrections put it under the pointer.
+export const moveCurve = (doc, id, [dx, dy]) => {
+	const transition = doc.transitions.find((candidate) => candidate.id === id)
+	const [startX, startY] = transitionShape(doc, transition).handle
+	const pull = curvePull(transition)
+	
+	const curve = Array.from({ length: CURVE_STEPS }).reduce((current) => {
+		const [x, y] = transitionShape(doc, { ...transition, curve: current }).handle
+		return [current[0] + (startX + dx - x) * pull, current[1] + (startY + dy - y) * pull]
+	}, curveOf(doc, transition))
+	
+	return updateTransition(doc, id, { curve: curve.map(Math.round) })
+}
+
+export const moveTransitionLabel = (doc, id, [dx, dy]) => {
+	const [x, y] = doc.transitions.find((candidate) => candidate.id === id).labelOffset ?? [0, 0]
+	return updateTransition(doc, id, { labelOffset: [x + dx, y + dy] })
+}
 
 export const addTransition = (doc, from, to) => {
 	const id = nextId(doc.transitions, "t")

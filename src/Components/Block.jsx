@@ -48,10 +48,12 @@ const LabelText = ({x, y, anchor, on, children}) => {
 	</text>
 }
 
-export const BlockLabel = ({x, y, children, align, on, direction}) => {
+// `mark` is drawn with the text, so it stays beside it however the part is turned.
+export const BlockLabel = ({x, y, children, align, on, direction, mark}) => {
 	const { anchor, transform } = useUprightText(x, y, align || "start", direction)
 	
 	return <g transform={transform}>
+		{mark}
 		<LabelText x={x} y={y} anchor={anchor} on={on}>{children}</LabelText>
 	</g>
 }

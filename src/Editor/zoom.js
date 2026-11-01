@@ -30,7 +30,9 @@ export const zoomedDisplay = (instance) => {
 		{ id: "counter", component: "Counter", at: [COUNTER_X, counterY], props: { modulo: 2 ** Math.min(width, MAX_DEMO_BITS) } },
 		{ id: "bcd", component: "Bcd", at: [BCD_X, bcdY], props: { width } },
 		...Array.from({ length: digits }, (_, digit) => ({
-			id: `digit_${digit}`, component: "SevenSegment", at: [placeX(digit), rowY], props: { mode: "hex", color: instance.props.color },
+			id: `digit_${digit}`, component: "SevenSegment", at: [placeX(digit), rowY], props: {
+				mode: "hex", color: instance.props.color, point: digit > 0 && digit === instance.props.decimalPlaces,
+			},
 		})),
 	]
 	
