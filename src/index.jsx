@@ -9,12 +9,13 @@ import { InvertedLogicGatesLesson } from "./Lessons/InvertedGates/InvertedLogicG
 import { SequentialCircuitsLesson } from "./Lessons/SequentialCircuits/SequentialCircuitsLesson"
 import { StateMachineLesson } from "./Lessons/StateMachines/StateMachineLesson"
 import { BussesLesson } from "./Lessons/Busses/BussesLesson"
+import { LessonIndex } from "./Lessons/LessonIndex"
+import { TrafficLightsLesson } from "./Lessons/TrafficLights/TrafficLightsLesson"
 import { Editor } from "./Editor/Editor"
 
 import {
   createBrowserRouter,
-  RouterProvider,
-  Navigate
+  RouterProvider
 } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -24,7 +25,10 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Navigate to="/lessons/logic-gates" />
+        element: <LessonIndex />
+      }, {
+        path: "lessons",
+        element: <LessonIndex />
       }, {
         path: "lessons/logic-gates",
         element: <LogicGatesLesson />
@@ -40,6 +44,9 @@ const router = createBrowserRouter([
       }, {
         path: "lessons/state-machines",
         element: <StateMachineLesson />
+      }, {
+        path: "lessons/traffic-lights",
+        element: <TrafficLightsLesson />
       }, {
         path: "editor",
         element: <Editor />

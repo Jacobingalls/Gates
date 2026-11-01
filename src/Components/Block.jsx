@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 import classNames from "classnames";
 
 // How the surrounding part is rotated and flipped, so its text can stay readable.
-export const Placement = createContext({ rotation: 0, flipX: false, flipY: false });
+export const Placement = createContext({ rotation: 0, flipX: false, flipY: false, showTitle: true });
 
 const DIRECTIONS = { start: [1, 0], end: [-1, 0], middle: [0, 0] }
 
@@ -28,9 +28,11 @@ const useUprightText = (x, y, align, direction) => {
 }
 
 export const Block = ({children, x, y, height, width, title}) => {
+	const { showTitle } = useContext(Placement)
+	
 	return <g transform={`translate(${x},${y})`}>
 		<rect x="0" y="0" height={height} width={width} className="gate" />
-		<BlockLabel x={width / 2} y={height + 20} align="middle" direction={[0, 1]}>{title}</BlockLabel>
+		{showTitle && <BlockLabel x={width / 2} y={height + 20} align="middle" direction={[0, 1]}>{title}</BlockLabel>}
 		{children}
 	</g>
 }

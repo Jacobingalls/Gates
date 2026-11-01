@@ -3,3 +3,13 @@
 	stroke: #665;
 	stroke-width: 3px;
 }
+
+.turn-arrow {
+	stroke-width: 1px;
+}
+
+.turn-lens {
+	fill: #111;
+	stroke: #333;
+	stroke-width: 1px;
+}

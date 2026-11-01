@@ -1,0 +1,79 @@
+{
+	"format": 1,
+	"kind": "stateMachine",
+	"machine": "moore",
+	"size": [835, 545],
+	"instances": [
+		{ "id": "ped_button", "component": "KeyboardButton", "at": [350, 35], "props": { "keyboard": "1" }, "name": "Ped Button" },
+		{ "id": "pilot", "component": "Led", "at": [120, 35], "name": "Pilot Light", "props": { "color": "#ff2600" }, "labelSide": "right" },
+		{ "id": "go_button", "component": "KeyboardButton", "at": [485, 35], "props": { "keyboard": "2" }, "name": "Start Walk Cycle" },
+		{ "id": "ped", "component": "WalkLight", "at": [15, 25], "name": "Ped", "props": { "width": 7 } },
+		{ "id": "wait_speaker", "component": "Speaker", "at": [695, 430], "name": "Wait", "props": { "sound": "waitSpeech", "volume": 100, "small": true }, "labelSide": "left" },
+		{ "id": "walk_sign_speaker", "component": "Speaker", "at": [730, 430], "name": "Walk Sign", "labelSide": "right", "props": { "sound": "walkSign", "volume": 100, "small": true } },
+		{ "id": "ns_speaker", "component": "Speaker", "at": [695, 465], "name": "Perc NS", "labelSide": "left", "props": { "sound": "percNS", "volume": 100, "small": true, "loop": true } },
+		{ "id": "ew_speaker", "component": "Speaker", "at": [730, 465], "name": "Perc EW", "labelSide": "right", "props": { "sound": "percEW", "volume": 100, "small": true, "loop": true } },
+		{ "id": "locator_speaker", "component": "Speaker", "at": [695, 500], "name": "Locator", "labelSide": "left", "props": { "sound": "locator", "volume": 40, "small": true } },
+		{ "id": "direction", "component": "RockerSwitch", "at": [645, 35], "props": { "keyboard": "3" }, "name": "Is East-West Crossing", "rotation": 270 },
+		{ "id": "hold", "component": "Led", "at": [120, 65], "name": "Hold Cross Traffic Red", "props": { "color": "#ffb000" }, "labelSide": "right" },
+		{ "id": "tenths", "component": "Clock", "at": [15, 650], "name": "Tenths", "props": { "frequency": 10, "duty": 50, "controlType": "enable" } },
+		{ "id": "flasher", "component": "Clock", "at": [180, 655], "name": "Flasher", "props": { "frequency": 1, "duty": 50, "controlType": "enable" } },
+		{ "id": "timer", "component": "Countdown", "at": [350, 655], "name": "Timer", "props": { "width": 9 } },
+		{ "id": "count", "component": "Countdown", "at": [530, 655], "name": "Count", "props": { "width": 7 } },
+		{ "id": "call", "component": "SRLatch", "at": [730, 655], "name": "Ped Call" },
+		{ "id": "service", "component": "SRLatch", "at": [880, 655], "name": "Go Call" },
+		{ "id": "hand", "component": "Lut", "at": [25, 795], "name": "Hand", "bused": [], "props": { "addressBits": 3, "dataBits": 1, "split": true, "inputFormat": "bits", "outputFormat": "bits", "values": [0, 0, 1, 1, 0, 1, 1, 1], "columns": { "A2": "Flashing", "A1": "Steady", "A0": "Flasher", "Q0": "Hand" } } },
+		{ "id": "wait_clock", "component": "Clock", "at": [180, 805], "name": "Wait Repeat", "props": { "frequency": 0.2, "duty": 10, "controlType": "enable" } },
+		{ "id": "number_display_1", "component": "NumberDisplay", "at": [685, 360], "props": { "width": 9, "small": true, "color": "#929292" }, "labelSide": "bottom", "name": "Timer" },
+		{ "id": "perc_lut", "component": "Lut", "at": [370, 810], "props": { "addressBits": 2, "dataBits": 2, "split": true, "inputFormat": "bits", "outputFormat": "bits", "values": [0, 2, 0, 1], "columns": { "A0": "Enable", "Q3": "NS", "Q2": "EW", "A1": "Is EW", "Q1": "NS", "Q0": "EW" } }, "name": "Perc Sound", "bused": [] },
+		{ "id": "locator_slow_clock", "component": "Clock", "at": [540, 810], "props": { "duty": 50, "controlType": "disable", "frequency": 0.2 }, "name": "Locator Slow Clock" },
+		{ "id": "locator_mux", "component": "Mux", "at": [735, 815], "props": { "selectBits": 2, "width": 1, "names": { "select": "Speed", "output": "Trigger", "in0": "Silent", "in1": "Fast", "in2": "Slow", "in3": "Unused" } }, "name": "Locator Mux" }
+	],
+	"nets": [],
+	"connections": [
+		{ "from": "tenths.output", "to": "timer.clk" },
+		{ "from": "flasher.output", "to": "count.clk" },
+		{ "from": "count.setValue", "to": "ped.time" },
+		{ "from": "flasher.output", "to": "hand.A0" },
+		{ "from": "hand.setBit0", "to": "ped.wait" },
+		{ "from": "ped_button.output", "to": "call.s" },
+		{ "from": "call.setQ", "to": "pilot.on" },
+		{ "from": "go_button.output", "to": "service.s" },
+		{ "from": "call.setQ", "to": "wait_clock.control" },
+		{ "from": "wait_clock.output", "to": "wait_speaker.start" },
+		{ "from": "timer.setValue", "to": "number_display_1.value" },
+		{ "from": "direction.output", "to": "perc_lut.A1" },
+		{ "from": "perc_lut.setBit1", "to": "ns_speaker.start" },
+		{ "from": "perc_lut.setBit0", "to": "ew_speaker.start" },
+		{ "from": "locator_slow_clock.output", "to": "machine.clock" },
+		{ "from": "flasher.output", "to": "locator_mux.in1" },
+		{ "from": "locator_slow_clock.output", "to": "locator_mux.in2" },
+		{ "from": "locator_mux.output", "to": "locator_speaker.start" }
+	],
+	"constants": [
+		{ "name": "Silent", "value": 0 },
+		{ "name": "Slow", "value": 2 },
+		{ "name": "Fast", "value": 1 }
+	],
+	"initial": "dont_walk",
+	"states": [
+		{ "id": "dont_walk", "name": "Don't Walk", "at": [100, 405], "assert": { "hand.A1": 1, "locator_mux.select": "Slow" } },
+		{ "id": "go_ignored", "name": "No Request", "at": [100, 205], "assert": { "hand.A1": 1, "service.r": 1 } },
+		{ "id": "announce", "name": "Walk Sign On", "at": [300, 185], "assert": { "ped.walk": 1, "hold.on": 1, "call.r": 1, "service.r": 1, "walk_sign_speaker.start": 1, "timer.start": 20 } },
+		{ "id": "walk", "name": "Walk", "at": [500, 185], "assert": { "ped.walk": 1, "hold.on": 1, "flasher.control": 0, "count.start": 9, "timer.start": 50, "perc_lut.A0": 1 } },
+		{ "id": "flash", "name": "Flashing Hand", "at": [710, 185], "assert": { "hand.A2": 1, "hold.on": 1, "flasher.control": 1, "ped.showTime": 1, "timer.start": 80, "locator_mux.select": "Fast" } },
+		{ "id": "buffer", "name": "Buffer", "at": [520, 405], "assert": { "hand.A1": 1, "hold.on": 1, "timer.start": 46, "locator_mux.select": "Slow" } }
+	],
+	"transitions": [
+		{ "id": "t1", "from": "dont_walk", "to": "announce", "on": { "call.setQ": 1, "service.setQ": 1 } },
+		{ "id": "t2", "from": "dont_walk", "to": "go_ignored", "on": { "call.setQ": 0, "service.setQ": 1 } },
+		{ "id": "t3", "from": "go_ignored", "to": "dont_walk", "on": {} },
+		{ "id": "t7", "from": "announce", "to": "walk", "on": { "timer.setValue": { "op": "<=", "value": 1 } } },
+		{ "id": "t4", "from": "walk", "to": "flash", "on": { "timer.setValue": { "op": "<=", "value": 1 } } },
+		{ "id": "t5", "from": "flash", "to": "buffer", "on": { "timer.setValue": { "op": "<=", "value": 1 } } },
+		{ "id": "t6", "from": "buffer", "to": "dont_walk", "on": { "timer.setValue": { "op": "<=", "value": 1 } } }
+	],
+	"backdrops": [
+		{ "id": "backdrop_1", "at": [5, 10], "size": [825, 90] },
+		{ "id": "backdrop_2", "at": [615, 350], "size": [215, 185], "color": "#101015" }
+	]
+}

@@ -4,38 +4,62 @@ import { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 
 import { CircuitDiagram } from "../Circuits/CircuitDiagram"
+import { StateMachineDiagram } from "../Circuits/StateMachineDiagram"
+import { TruthTableDiagram } from "../Circuits/TruthTableDiagram"
 import { Canvas } from "./Canvas"
 import { Inspector } from "./Inspector"
 import { Library } from "./Library"
-import { loadDraft, saveDraft } from "./autosave"
-import { useHistory } from "./useHistory"
+import { loadTab, saveTab } from "./autosave"
+import { KINDS, exportDocument, parseDocument } from "./documents"
+import { useDocument } from "./useDocument"
 import { useWindowEvent } from "./useWindowEvent"
 import {
-	allItems, blankCircuit, copyItems, exportCircuit, finishedCircuit, fitFrame, flipSelection, isEmptyCopy,
-	parseCircuit, pasteItems, removeSelection, rotateSelection,
+	allItems, copyItems, finishedCircuit, fitFrame, flipSelection, isEmptyCopy, pasteItems, removeSelection,
+	rotateSelection,
 } from "./circuit"
 
-const TOOLS = [
-	{ id: "select", title: "Select", key: "v" },
-	{ id: "wire", title: "Wire", key: "w" },
-	{ id: "bus", title: "Bus", key: "b" },
-	{ id: "point", title: "Point", key: "p" },
-]
+const TOOLS = {
+	circuit: [
+		{ id: "select", title: "Select", key: "v" },
+		{ id: "wire", title: "Wire", key: "w" },
+		{ id: "bus", title: "Bus", key: "b" },
+		{ id: "point", title: "Point", key: "p" },
+	],
+	truthTable: [{ id: "select", title: "Select", key: "v" }],
+	stateMachine: [
+		{ id: "select", title: "Select", key: "v" },
+		{ id: "state", title: "State", key: "s" },
+		{ id: "transition", title: "Transition", key: "t" },
+	],
+}
+
+const RUNNERS = {
+	circuit: (doc) => <CircuitDiagram circuit={doc} />,
+	truthTable: (doc) => <TruthTableDiagram table={doc} />,
+	stateMachine: (doc) => <StateMachineDiagram machine={doc} />,
+}
 
 const REVOKE_DELAY = 10000
 const PASTE_OFFSET = 20
-const FILE_TYPES = [{ description: "Circuit", accept: { "application/json": [".json"] } }]
+const FILE_TYPES = [{ description: "Gates diagram", accept: { "application/json": [".json"] } }]
 
-const isTyping = (element) => ["INPUT", "SELECT", "TEXTAREA"].includes(element.tagName)
+// A ticked checkbox keeps focus, and shouldn't take the editor's shortcuts with it.
+const isTyping = (element) => ["INPUT", "SELECT", "TEXTAREA"].includes(element.tagName) && element.type !== "checkbox"
 
 export const Editor = () => {
-	const [draft] = useState(loadDraft);
-	const history = useHistory(draft?.doc ?? blankCircuit());
-	const { doc, apply, undo, redo, reset } = history;
+	const documents = {
+		circuit: useDocument("circuit"),
+		truthTable: useDocument("truthTable"),
+		stateMachine: useDocument("stateMachine"),
+	}
+	
+	const [tab, setTab] = useState(() => KINDS[loadTab()] === undefined ? "circuit" : loadTab());
+	const history = documents[tab];
+	const { apply, undo, redo, fileName, setFileName } = history;
+	const { doc } = history;
 	
 	const [selection, setSelection] = useState([]);
 	const [tool, setTool] = useState("select");
-	const [fileName, setFileName] = useState(draft?.fileName ?? "Circuit.json");
 	const [status, setStatus] = useState("");
 	const [scrollKey, setScrollKey] = useState(0);
 	const [running, setRunning] = useState(null);
@@ -74,8 +98,8 @@ export const Editor = () => {
 	}
 	
 	useEffect(() => {
-		saveDraft(doc, fileName)
-	}, [doc, fileName]);
+		saveTab(tab)
+	}, [tab]);
 	
 	useWindowEvent("keydown", (event) => {
 		if (isRunning) {
@@ -131,23 +155,31 @@ export const Editor = () => {
 		} else if (key === "y") {
 			apply((current) => flipSelection(current, selection, "flipY"))
 		} else {
-			const match = TOOLS.find((candidate) => candidate.key === key)
+			const match = TOOLS[tab].find((candidate) => candidate.key === key)
 			if (match !== undefined) {
 				setTool(match.id)
 			}
 		}
 	});
 	
-	const start = (circuit, name) => {
-		reset(circuit)
-		setFileName(name)
+	const start = (next, name) => {
+		documents[next.kind].reset(next)
+		documents[next.kind].setFileName(name)
+		setTab(next.kind)
 		setSelection([])
 		setTool("select")
 		setScrollKey((key) => key + 1)
 	}
 	
+	const switchTab = (kind) => {
+		setTab(kind)
+		setSelection([])
+		setTool("select")
+		setStatus("")
+	}
+	
 	const toggleRun = (event) => {
-		setRunning(isRunning ? null : finishedCircuit(doc))
+		setRunning(isRunning ? null : { kind: tab, doc: finishedCircuit(doc) })
 		// A focused button would be pressed again by the space bar.
 		event.currentTarget.blur()
 	}
@@ -160,7 +192,7 @@ export const Editor = () => {
 		}
 		
 		try {
-			start(parseCircuit(await file.text()), file.name)
+			start(parseDocument(await file.text()), file.name)
 			setStatus(`Opened ${file.name}`)
 		} catch (error) {
 			setStatus(`Couldn't open ${file.name}: ${error.message}`)
@@ -180,7 +212,7 @@ export const Editor = () => {
 	
 	// Only Chromium browsers can show a real save panel, so the rest download.
 	const save = async () => {
-		const text = exportCircuit(doc)
+		const text = exportDocument(doc)
 		if (window.showSaveFilePicker === undefined) {
 			download(text)
 			return
@@ -200,19 +232,39 @@ export const Editor = () => {
 		}
 	}
 	
+	const runView = isRunning && <div className="editor-run">
+		{RUNNERS[running.kind](running.doc)}
+	</div>
+	
 	return <div className="editor">
 		<div className="editor-toolbar">
+			<span className="editor-tabs">
+				{Object.entries(KINDS).map(([kind, { title }]) => {
+					return <button
+						key={kind}
+						type="button"
+						disabled={isRunning}
+						className={classNames({ current: tab === kind })}
+						onClick={() => switchTab(kind)}
+					>
+						{title}
+					</button>
+				})}
+			</span>
+			
+			<span className="editor-divider" />
+			
 			<button type="button" disabled={isRunning} onClick={() => {
-				start(blankCircuit(), "Circuit.json")
+				start(KINDS[tab].blank(), KINDS[tab].fileName)
 				setStatus("")
 			}}>New</button>
 			<button type="button" disabled={isRunning} onClick={() => fileRef.current.click()}>Open</button>
 			<button type="button" onClick={save}>Save</button>
 			<input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={onFile} />
 			
-			<span className="editor-divider" />
+			{TOOLS[tab].length > 0 && <span className="editor-divider" />}
 			
-			{TOOLS.map(({ id, title, key }) => {
+			{TOOLS[tab].map(({ id, title, key }) => {
 				return <button
 					key={id}
 					type="button"
@@ -233,7 +285,7 @@ export const Editor = () => {
 			<button
 				type="button"
 				disabled={isRunning}
-				title="Fit the circuit box around everything (F)"
+				title="Fit the box around everything (F)"
 				onClick={() => apply(fitFrame)}
 			>
 				Fit Box
@@ -255,9 +307,10 @@ export const Editor = () => {
 		</div>
 		
 		<div className="editor-body">
-			<Library locked={isRunning} />
+			<Library kind={tab} locked={isRunning} />
 			<div className="editor-stage">
 				<Canvas
+					key={tab}
 					history={history}
 					selection={selection}
 					setSelection={setSelection}
@@ -267,16 +320,16 @@ export const Editor = () => {
 					scrollKey={scrollKey}
 					locked={isRunning}
 				/>
-				{isRunning && <div className="editor-run">
-					<CircuitDiagram circuit={running} />
-				</div>}
+				{runView}
 			</div>
 			<Inspector
 				doc={doc}
 				selection={selection}
+				setSelection={setSelection}
 				apply={apply}
 				clearSelection={() => setSelection([])}
 				onDuplicate={duplicate}
+				onZoom={(circuit) => setRunning({ kind: "circuit", doc: circuit })}
 				locked={isRunning}
 			/>
 		</div>

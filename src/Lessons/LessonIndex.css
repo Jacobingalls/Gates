@@ -1,0 +1,43 @@
+.lesson-index {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	
+	width: 100%;
+	max-width: 920px;
+	margin: 0 auto;
+	padding: 0;
+	
+	counter-reset: lesson;
+	list-style: none;
+	text-align: left;
+}
+
+.lesson-index li {
+	counter-increment: lesson;
+}
+
+.lesson-index a {
+	display: flex;
+	gap: 16px;
+	
+	padding: 16px 20px;
+	border-radius: 12px;
+	
+	font-size: 1.25em;
+	color: #fff;
+	background: #111;
+	text-decoration: none;
+	
+	transition: background 0.1s ease-in;
+}
+
+.lesson-index a::before {
+	content: counter(lesson);
+	min-width: 1.2em;
+	color: #99a;
+}
+
+.lesson-index a:hover {
+	background: #223;
+}

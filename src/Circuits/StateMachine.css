@@ -1,0 +1,58 @@
+.machine-state circle {
+	fill: #445;
+	stroke: #99a;
+	stroke-width: 3px;
+}
+
+.machine-state.on circle {
+	fill: #667;
+	stroke: #fff;
+}
+
+.circuit .machine-state.on text {
+	fill: #fff;
+}
+
+.machine-start {
+	fill: none;
+	stroke: #99a;
+	stroke-width: 2px;
+}
+
+.circuit text.part-name {
+	font-size: 13px;
+}
+
+.circuit text.machine-output {
+	font-size: 11px;
+}
+
+.circuit text.machine-port {
+	font-size: 13px;
+}
+
+.machine-transition path {
+	fill: none;
+	stroke: #778;
+	stroke-width: 2px;
+}
+
+.machine-transition polygon {
+	fill: #778;
+}
+
+.machine-transition text {
+	font-size: 11px;
+}
+
+.machine-transition.on path {
+	stroke: #fff;
+}
+
+.machine-transition.on polygon {
+	fill: #fff;
+}
+
+.circuit .machine-transition.on text {
+	fill: #fff;
+}

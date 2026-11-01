@@ -1,21 +1,15 @@
 import { useMemo, useState } from "react";
 
 import { Circuit, CircuitSVG } from "./Circuit"
-import { PARTS, PartStubs, PlacedPart } from "./parts"
+import { PARTS, PartStubs, PlacedPart, bitOf, boxOf, extentOf, labelText, outputProps, splitBus, withBit } from "./parts"
 import { busTick, netPath, tapLeavesRight } from "./wirePath"
 import { Wire, Bus, BusLabel, Junction } from "../Components/Wires"
-import { KeyboardButton } from "../Components/Buttons/KeyboardButton.jsx"
 
 const isOutput = (prop) => prop === "output" || prop.startsWith("set")
 
 const isBus = (net) => net.width !== undefined
 
-const withBit = (value, bit, on) => {
-	const mask = 1 << bit
-	return on ? Number(value) | mask : Number(value) & ~mask
-}
-
-export const isButton = (instance) => instance.component === "KeyboardButton"
+export const isHtmlPart = (instance) => PARTS[instance.component].html === true
 
 const TapLabel = ({ net, tap, bus }) => {
 	const right = tapLeavesRight(net, tap)
@@ -43,8 +37,44 @@ export const NetLayer = ({ nets, isOn }) => {
 	</>
 }
 
+// Rounded boxes that lift a group of parts off the background, so they go under everything.
+export const BackdropLayer = ({ backdrops }) => (backdrops ?? []).map(({ id, at, size, color }) => {
+	return <rect
+		key={id}
+		className="backdrop"
+		x={at[0]} y={at[1]} width={size[0]} height={size[1]} rx="12"
+		style={color && { fill: color }}
+	/>
+})
+
+const TAG_DROP = 16
+const TAG_GAP = 5
+
+// Text that goes with a part. Unless the part picks a side, it goes beside the ones that
+// always stay upright, and below the rest.
+export const PartTag = ({ instance, className, children }) => {
+	const [left, top, right, bottom] = boxOf(instance)
+	const { faceHeight = bottom - top } = PARTS[instance.component]
+	const [middleX, middleY] = [(left + right) / 2, top + faceHeight / 2]
+	
+	const places = {
+		top: ["middle", middleX, top - TAG_GAP * 2],
+		bottom: ["middle", middleX, bottom + TAG_DROP],
+		left: ["end", left - TAG_GAP * 2, middleY, "central"],
+		right: ["start", right + TAG_GAP * 2, middleY, "central"],
+	}
+	const place = places[instance.labelSide]
+		?? (isHtmlPart(instance) ? ["start", right + TAG_GAP, middleY, "central"] : ["middle", middleX, extentOf(instance)[3] + TAG_DROP])
+	
+	return <text className={className} text-anchor={place[0]} dominant-baseline={place[3]} x={place[1]} y={place[2]}>{children}</text>
+}
+
 export const LabelLayer = ({ circuit }) => {
 	return <>
+		{circuit.instances.map((instance) => {
+			const name = labelText(circuit, instance)
+			return name !== undefined && <PartTag key={instance.id} instance={instance} className="part-name">{name}</PartTag>
+		})}
 		{(circuit.labels ?? []).map((label) => {
 			return <BusLabel key={label.id} x={label.at[0]} y={label.at[1]} color={label.color}>{label.text}</BusLabel>
 		})}
@@ -67,7 +97,8 @@ export const CircuitDiagram = ({ circuit }) => {
 			if (tap !== undefined) {
 				return { ...current, [tap.bus]: withBit(current[tap.bus], tap.bit, value === true) }
 			}
-			return current[net.id] === value ? current : { ...current, [net.id]: value }
+			const next = typeof value === "function" ? value(current[net.id]) : value
+			return current[net.id] === next ? current : { ...current, [net.id]: next }
 		})]
 	})), [circuit]);
 	
@@ -83,7 +114,7 @@ export const CircuitDiagram = ({ circuit }) => {
 	const read = (net) => {
 		const tap = net.taps?.[0]
 		if (tap !== undefined) {
-			return ((Number(values[tap.bus]) >> tap.bit) & 1) === 1
+			return bitOf(values[tap.bus], tap.bit)
 		}
 		return net.inverseOf === undefined ? values[net.id] : !values[net.inverseOf]
 	}
@@ -97,30 +128,30 @@ export const CircuitDiagram = ({ circuit }) => {
 			return [[prop, isOutput(prop) ? setterFor(net) : read(net)]]
 		}))
 		
-		const outputs = Object.keys(PARTS[instance.component].pins)
-			.filter(isOutput)
-			.map((prop) => [prop, () => {}])
+		const outputs = outputProps(instance).map((prop) => [prop, () => {}])
 		
-		return {
+		return splitBus(instance, {
 			x: instance.at[0],
 			y: instance.at[1],
 			...Object.fromEntries(outputs),
 			...instance.props,
 			...Object.fromEntries(wired),
-		}
+		})
 	}
 	
 	return <Circuit width={`${circuit.size[0]}px`} height={`${circuit.size[1]}px`}>
-		{circuit.instances.filter(isButton).map((instance) => {
-			return <KeyboardButton key={instance.id} {...propsFor(instance)} />
+		{circuit.instances.filter(isHtmlPart).map((instance) => {
+			const { Component } = PARTS[instance.component]
+			return <Component key={instance.id} {...propsFor(instance)} />
 		})}
 		
 		<CircuitSVG>
+			<BackdropLayer backdrops={circuit.backdrops} />
 			<NetLayer nets={circuit.nets} isOn={(net) => read(net) === true} />
 			{circuit.instances.map((instance) => {
 				return <PartStubs key={instance.id} instance={instance} nets={circuit.nets} />
 			})}
-			{circuit.instances.filter((instance) => !isButton(instance)).map((instance) => {
+			{circuit.instances.filter((instance) => !isHtmlPart(instance)).map((instance) => {
 				return <PlacedPart key={instance.id} instance={instance} partProps={propsFor(instance)} />
 			})}
 			<LabelLayer circuit={circuit} />

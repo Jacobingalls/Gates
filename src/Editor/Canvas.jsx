@@ -1,31 +1,39 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import classNames from "classnames";
 
-import { PARTS, PartStubs, PlacedPart } from "../Circuits/parts"
-import { LabelLayer, NetLayer, isButton } from "../Circuits/CircuitDiagram"
+import { PARTS, PartStubs, PlacedPart, labelText, outputProps, shownColumns } from "../Circuits/parts"
+import { TruthTableBusRow } from "../Circuits/TruthTable"
+import { BackdropLayer, LabelLayer, NetLayer, PartTag } from "../Circuits/CircuitDiagram"
+import { StateGraph } from "../Circuits/StateMachineDiagram"
+import { STATE_RADIUS, stateAt } from "../Circuits/stateGeometry"
 import { netPath, pointOf, wirePath } from "../Circuits/wirePath"
-import { DRAG_TYPE, LABEL_ITEM } from "./Library"
+import { BACKDROP_ITEM, DRAG_TYPE, LABEL_ITEM, STATE_ITEM } from "./Library"
+import { addState, addTransition } from "./stateMachine"
+import { toggleCell } from "./truthTable"
 import { useWindowEvent } from "./useWindowEvent"
+import { placeInMachine } from "./stateMachine"
+import { autoBind, bindingLabel } from "./variables"
 import {
-	addCorner, addInstance, addLabel, addPoint, boxOf, drawTarget, dropRouteEnd, finishDrawing, frameHandles, hitTest, itemsInBox,
-	isRouteEnd, labelBox, moveSegment, moveSelection, moveTick, moveVertex, originOf, segmentItem, pinsOf, resizeFrame, snapPoint, tidyRoutes,
+	addBackdrop, addCorner, addInstance, addLabel, addPoint, backdropAt, backdropBox, backdropContents, boxHandles, boxOf, drawTarget,
+	dropRouteEnd, finishDrawing, frameHandles, hitTest, itemsInBox, isRouteEnd, labelBox, moveSegment, moveSelection, moveTick,
+	moveVertex, originOf, segmentItem, pinsOf, resizeBackdrop, resizeFrame, snapPoint, tidyRoutes,
 } from "./circuit"
 
-const SURFACE = [4000, 3000]
-const ORIGIN = [1500, 1200]
+export const SURFACE = [4000, 3000]
+export const ORIGIN = [1500, 1200]
 const HANDLE_SIZE = 8
 const BUTTON_FACE = [40, 34]
 const BUTTON_RAISE = 4
+const SWITCH_SIZE = [60, 35]
 const LEAVING_REACH = 6
 const NODE_REACH = 8
 
 const noop = () => {}
 
-const outputProps = (instance) => {
-	const outputs = Object.keys(PARTS[instance.component].pins)
-		.filter((prop) => prop === "output" || prop.startsWith("set"))
-		.map((prop) => [prop, noop])
+const stillProps = (instance) => {
+	const outputs = outputProps(instance).map((prop) => [prop, noop])
 	
-	return { x: instance.at[0], y: instance.at[1], ...Object.fromEntries(outputs), ...instance.props }
+	return { x: instance.at[0], y: instance.at[1], still: true, ...Object.fromEntries(outputs), ...instance.props }
 }
 
 const sameItem = (a, b) => {
@@ -55,6 +63,10 @@ const ButtonSymbol = ({ instance }) => {
 	return <g>
 		<rect className="editor-button-base" y={y + BUTTON_RAISE} {...face} />
 		<rect className="editor-button-face" y={y} {...face} />
+		{instance.component === "RockerSwitch" && <rect
+			className="editor-rocker-half"
+			x={x} y={y} width={BUTTON_FACE[0]} height={BUTTON_FACE[1] / 2} rx="5"
+		/>}
 		<text
 			className="editor-button-label"
 			text-anchor="middle"
@@ -64,6 +76,69 @@ const ButtonSymbol = ({ instance }) => {
 			{instance.props?.keyboard}
 		</text>
 	</g>
+}
+
+const SwitchSymbol = ({ instance }) => {
+	const [x, y] = instance.at
+	return <g>
+		<rect className="editor-button-base" x={x} y={y} width={SWITCH_SIZE[0]} height={SWITCH_SIZE[1]} rx="5" />
+		<rect className="editor-button-face" x={x + 3} y={y + 3} width={SWITCH_SIZE[0] * .6} height={SWITCH_SIZE[1] - 6} rx="4" />
+	</g>
+}
+
+const PartSymbol = ({ instance }) => {
+	if (instance.component === "KeyboardButton" || instance.component === "RockerSwitch") {
+		return <ButtonSymbol instance={instance} />
+	}
+	if (instance.component === "ToggleSwitch") {
+		return <SwitchSymbol instance={instance} />
+	}
+	return <PlacedPart instance={instance} partProps={stillProps(instance)} />
+}
+
+// The table as it sits on the canvas, with outputs that click to switch.
+const TableOnCanvas = ({ table, selected, apply }) => {
+	const lastInput = table.inputs.length - 1
+	const columns = [...table.inputs, ...table.outputs]
+	const shown = shownColumns(table)
+	
+	return <div
+		className={classNames("editor-bench-table", { selected })}
+		style={{ left: ORIGIN[0] + table.at[0], top: ORIGIN[1] + table.at[1] }}
+	>
+		<table>
+			<thead>
+				<TruthTableBusRow columns={shown} lastInput={lastInput} />
+				<tr>
+					{shown.map(({ name }, c) => {
+						return <th key={c} className={c === lastInput ? "lastInput" : undefined}>{name}</th>
+					})}
+				</tr>
+			</thead>
+			<tbody>
+				{table.rows.map((row, r) => {
+					return <tr key={r}>
+						{row.map((value, c) => {
+							if (c <= lastInput) {
+								return <td key={c} className={c === lastInput ? "lastInput" : undefined}>{value}</td>
+							}
+							return <td key={c}>
+								<button
+									type="button"
+									className={classNames("editor-cell", { on: value === 1 })}
+									aria-label={`Row ${r + 1} ${columns[c].name}`}
+									onMouseDown={(event) => event.stopPropagation()}
+									onClick={() => apply((current) => toggleCell(current, r, c))}
+								>
+									{value}
+								</button>
+							</td>
+						})}
+					</tr>
+				})}
+			</tbody>
+		</table>
+	</div>
 }
 
 const WireCorners = ({ net }) => net.route.flatMap((line, l) => line.map((point, p) => {
@@ -99,9 +174,11 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 	const [draft, setDraft] = useState(null);
 	const [cursor, setCursor] = useState(null);
 	const [marquee, setMarquee] = useState(null);
+	const [linkFrom, setLinkFrom] = useState(null);
 	
 	useEffect(() => {
 		setDraft(null)
+		setLinkFrom(null)
 	}, [tool]);
 	
 	useLayoutEffect(() => {
@@ -162,7 +239,9 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 			return
 		}
 		
-		if (event.key === "Escape" && draft !== null) {
+		if (event.key === "Escape" && linkFrom !== null) {
+			setLinkFrom(null)
+		} else if (event.key === "Escape" && draft !== null) {
 			setDraft(null)
 		} else if (event.key === "Escape") {
 			setTool("select")
@@ -199,13 +278,26 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 			return
 		}
 		
+		if (tool === "state") {
+			const added = addState(doc, point)
+			apply(() => added.doc)
+			setSelection([{ kind: "state", id: added.id }])
+			return
+		}
+		
+		if (tool === "transition") {
+			onLink(point)
+			return
+		}
+		
 		if (tool !== "select") {
 			onDrawClick(point)
 			return
 		}
 		
 		const adding = event.shiftKey || event.metaKey || event.ctrlKey
-		const hit = hitTest(doc, point, selection)
+		const onTable = event.target.closest?.(".editor-bench-table")
+		const hit = onTable ? { kind: "table", id: "table" } : hitTest(doc, point, selection)
 		const onSelectedNode = selection.some((other) => {
 			return other.kind === "node" && Math.hypot(other.at[0] - point[0], other.at[1] - point[1]) <= NODE_REACH
 		})
@@ -266,13 +358,33 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 			setSelection([item])
 		}
 		
-		const movesWhole = inGroup || hit.kind === "instance" || hit.kind === "label"
+		if (hit.kind === "transition") {
+			return
+		}
+		
+		const onBackdrop = hit.kind === "backdrop" && hit.handle === undefined
+		const movesWhole = inGroup || onBackdrop || ["instance", "label", "state", "table"].includes(hit.kind)
+		const group = !inGroup && onBackdrop ? backdropContents(doc, hit.id) : [item]
 		dragRef.current = {
 			hit: movesWhole ? { kind: "group" } : hit,
-			group: inGroup ? selection : [item],
+			group: inGroup ? selection : group,
 			base: doc,
 			start: point,
 			moved: false,
+		}
+	}
+	
+	const onLink = (point) => {
+		const target = stateAt(doc, point)
+		if (target === undefined) {
+			setStatus("Click a state to connect it.")
+		} else if (linkFrom === null) {
+			setLinkFrom(target.id)
+		} else {
+			const added = addTransition(doc, linkFrom, target.id)
+			apply(() => added.doc)
+			setSelection([{ kind: "transition", id: added.id }])
+			setLinkFrom(null)
 		}
 	}
 	
@@ -323,6 +435,8 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 			preview(() => moveSegment(base, hit, delta))
 		} else if (hit.kind === "frame") {
 			preview(() => resizeFrame(base, hit.handle, delta))
+		} else if (hit.kind === "backdrop") {
+			preview(() => resizeBackdrop(base, hit.id, hit.handle, delta))
 		}
 	}
 	
@@ -335,6 +449,10 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 			// turn out to be remembers the wire was whole.
 			if (drag?.hit.kind === "net" && event.detail === 1 && wholeWireRef.current === drag.hit.id) {
 				setSelection([segmentItem(doc, drag.hit)])
+			}
+			const backdrop = drag?.hit.kind === "marquee" && drag.kept.length === 0 ? backdropAt(doc, drag.start) : undefined
+			if (backdrop !== undefined) {
+				setSelection([{ kind: "backdrop", id: backdrop.id }])
 			}
 			return
 		}
@@ -417,10 +535,29 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 		
 		event.preventDefault()
 		const point = toDiagram(event)
-		const added = name === LABEL_ITEM ? addLabel(doc, point) : addInstance(doc, name, point)
-		const kind = name === LABEL_ITEM ? "label" : "instance"
 		
-		apply(() => added.doc)
+		if (name === STATE_ITEM) {
+			const added = addState(doc, point)
+			apply(() => added.doc)
+			setSelection([{ kind: "state", id: added.id }])
+			return
+		}
+		
+		const [kind, add] = {
+			[LABEL_ITEM]: ["label", addLabel],
+			[BACKDROP_ITEM]: ["backdrop", addBackdrop],
+		}[name] ?? ["instance", (current, at) => addInstance(current, name, at)]
+		const added = add(doc, point)
+		
+		apply(() => {
+			if (kind !== "instance") {
+				return added.doc
+			}
+			if (doc.kind === "truthTable") {
+				return autoBind(added.doc, added.id)
+			}
+			return doc.kind === "stateMachine" ? placeInMachine(added.doc, added.id) : added.doc
+		})
 		setSelection([{ kind, id: added.id }])
 	}
 	
@@ -434,6 +571,10 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 	const selectedIds = (kind) => shown.filter((item) => item.kind === kind).map((item) => item.id)
 	const frameSelected = selection.some((item) => item.kind === "frame")
 	const onlyWire = selection.length === 1 && ["net", "segment"].includes(selection[0].kind)
+	const onlyBackdrop = selection.length === 1 && selection[0].kind === "backdrop"
+		&& doc.backdrops?.find((backdrop) => backdrop.id === selection[0].id)
+	const linkState = doc.states?.find((state) => state.id === linkFrom)
+	const selectedStates = doc.states?.filter((state) => selectedIds("state").includes(state.id)) ?? []
 	const wireOfSegment = selection.length === 1 && selection[0].kind === "segment"
 		&& doc.nets.find((net) => net.id === selection[0].id)
 	
@@ -457,6 +598,7 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 			onMouseDown={onMouseDown}
 			onDragStart={(event) => event.preventDefault()}
 			onDoubleClick={onDoubleClick}
+			onDragEnter={(event) => event.preventDefault()}
 			onDragOver={(event) => event.preventDefault()}
 			onDrop={onDrop}
 		>
@@ -465,18 +607,27 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 					<rect className="editor-frame" x={frameX} y={frameY} width={width} height={height} />
 					{frameSelected && <text className="editor-frame-size" x={frameX} y={frameY - 12}>{width} × {height}</text>}
 					
+					<BackdropLayer backdrops={doc.backdrops} />
 					<NetLayer nets={doc.nets} isOn={() => true} />
-					{doc.instances.map((instance) => {
+					{doc.states && <StateGraph
+						machine={doc}
+						activeState={linkFrom}
+						activeTransition={selectedIds("transition")[0]}
+					/>}
+					{doc.kind === "circuit" && doc.instances.map((instance) => {
 						return <PartStubs key={instance.id} instance={instance} nets={doc.nets} />
 					})}
-					{doc.instances.map((instance) => {
-						return isButton(instance)
-							? <ButtonSymbol key={instance.id} instance={instance} />
-							: <PlacedPart key={instance.id} instance={instance} partProps={outputProps(instance)} />
+					{doc.instances.map((instance) => <PartSymbol key={instance.id} instance={instance} />)}
+					{doc.kind !== "circuit" && doc.instances.filter((instance) => {
+						return instance.labelSide !== "hidden" && labelText(doc, instance) === undefined
+					}).map((instance) => {
+						return <PartTag key={instance.id} instance={instance} className="editor-binding">
+							{doc.kind === "truthTable" ? bindingLabel(instance) : instance.id}
+						</PartTag>
 					})}
 					<LabelLayer circuit={doc} />
 					
-					{frameSelected && frameHandles(doc).map(({ name, at }) => {
+					{[...(frameSelected ? frameHandles(doc) : []), ...(onlyBackdrop ? boxHandles(backdropBox(onlyBackdrop)) : [])].map(({ name, at }) => {
 						return <rect
 							key={name}
 							data-handle={name}
@@ -495,6 +646,9 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 					})}
 					{doc.labels?.filter((l) => selectedIds("label").includes(l.id)).map((label) => {
 						return <SelectionBox key={label.id} box={labelBox(label)} />
+					})}
+					{doc.backdrops?.filter((b) => selectedIds("backdrop").includes(b.id)).map((backdrop) => {
+						return <SelectionBox key={backdrop.id} box={backdropBox(backdrop)} />
 					})}
 					{doc.nets.filter((n) => selectedIds("net").includes(n.id) && n.route).map((net) => {
 						return <NetSelection key={net.id} net={net} nets={doc.nets} showCorners={onlyWire} />
@@ -517,6 +671,13 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 						className="editor-point-preview"
 						cx={pointTarget[0]} cy={pointTarget[1]} r={4}
 					/>}
+					{selectedStates.map(({ id, at }) => {
+						return <circle key={id} className="editor-state-selection" cx={at[0]} cy={at[1]} r={STATE_RADIUS + 5} />
+					})}
+					{linkState && cursor && <path
+						className="editor-draft"
+						d={`M${linkState.at[0]},${linkState.at[1]} L${cursor[0]},${cursor[1]}`}
+					/>}
 					{marquee && <rect
 						className="editor-marquee"
 						x={marquee[0]} y={marquee[1]}
@@ -525,6 +686,8 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 					{draftPoints && <path className="editor-draft" d={wirePath([draftPoints])} />}
 				</g>
 			</svg>
+			
+			{doc.at && <TableOnCanvas table={doc} selected={selectedIds("table").length > 0} apply={apply} />}
 		</div>
 	</div>
 }

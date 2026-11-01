@@ -1,0 +1,13 @@
+.seven-segment {
+	fill: #111;
+	stroke: #445;
+	stroke-width: 2px;
+}
+
+.segment {
+	fill: #322;
+}
+
+.segment.on {
+	fill: #f33;
+}

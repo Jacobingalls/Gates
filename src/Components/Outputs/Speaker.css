@@ -1,0 +1,24 @@
+.speaker rect {
+	fill: #222;
+	stroke: #665;
+	stroke-width: 3px;
+}
+
+.speaker-cone {
+	fill: #778;
+}
+
+.speaker-wave {
+	fill: none;
+	stroke: #445;
+	stroke-width: 2px;
+	stroke-linecap: round;
+}
+
+.speaker.on .speaker-cone {
+	fill: #eef;
+}
+
+.speaker.on .speaker-wave {
+	stroke: #eef;
+}

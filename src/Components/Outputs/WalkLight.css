@@ -1,0 +1,47 @@
+.walk-housing {
+	fill: #0b0b0d;
+	stroke: #2c2c30;
+	stroke-width: 4px;
+}
+
+.walk-mesh-line {
+	fill: none;
+	stroke: #3a3a40;
+	stroke-width: 1px;
+}
+
+.walk-hand rect {
+	fill: #ff5a12;
+	stroke: none;
+}
+
+.walk-hand path {
+	fill: none;
+	stroke: #ff5a12;
+	stroke-width: 8px;
+	stroke-linecap: round;
+}
+
+.walk-person circle {
+	fill: #f4f4ff;
+}
+
+.walk-person path {
+	fill: none;
+	stroke: #f4f4ff;
+	stroke-width: 7px;
+	stroke-linecap: round;
+}
+
+.walk-digit .seven-segment {
+	fill: none;
+	stroke: none;
+}
+
+.walk-digit .segment {
+	fill: none;
+}
+
+.walk-digit .segment.on {
+	fill: #ff5a12;
+}

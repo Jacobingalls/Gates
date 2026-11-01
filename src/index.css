@@ -63,6 +63,13 @@ body {
   stroke: #DDE;
 }
 
+.backdrop {
+  fill: #2d2d3c;
+  stroke: #3b3b4d;
+  stroke-width: 1px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .35));
+}
+
 .gate {
   fill: #445;
   stroke: #99A;
@@ -154,6 +161,24 @@ body {
 
 .circuit button.blue:active::after {
   background: linear-gradient(#112646, #1e437c);
+}
+
+
+
+/* The half pushed in is the darker one, and it latches down like a held button. */
+.circuit button.rocker {
+  background: linear-gradient(#3c3c3c, #4a4a4a 48%, #222 48%, #222 52%, #808080 52%, #606060);
+}
+
+.circuit button.rocker.on {
+  top: 0;
+  background: linear-gradient(#808080, #606060 48%, #222 48%, #222 52%, #3c3c3c, #4a4a4a);
+}
+
+.circuit button.rocker.on::after {
+  top: 0px;
+  background: linear-gradient(#000, #111);
+  box-shadow: 0px 0px 5px 1px rgba(0,0,0,.2);
 }
 
 

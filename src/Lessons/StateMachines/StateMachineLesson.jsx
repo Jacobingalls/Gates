@@ -11,6 +11,8 @@ export const StateMachineLesson = () => {
 		<LessonFooter
 			previousLesson="/lessons/busses"
 			previousLessonTitle="Busses"
+			nextLesson="/lessons/traffic-lights"
+			nextLessonTitle="Traffic Lights"
 		/>
 	</div>
 }

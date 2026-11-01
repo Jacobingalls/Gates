@@ -4,11 +4,16 @@
 	"size": [350, 100],
 	"at": [110, 7],
 	"inputs": [
-		{ "title": "Button", "keyboard": "1", "at": [10, 30] }
+		{ "name": "Button" }
 	],
 	"outputs": [
-		{ "title": "Light", "at": [330, 50] }
+		{ "name": "Light" }
 	],
+	"instances": [
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" }, "bind": { "output": "Button" } },
+		{ "id": "light_1", "component": "Led", "at": [330, 50], "bind": { "on": "Light" } }
+	],
+	"nets": [],
 	"rows": [
 		[0, 0],
 		[1, 1]

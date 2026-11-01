@@ -1,4 +1,7 @@
-import { PARTS, boxOf, extentOf, pinPoint } from "../Circuits/parts"
+import { PARTS, boxOf, extentOf, pinPoint, pinsFor, shapeOf } from "../Circuits/parts"
+import { pruneMachine, renameTerminals } from "./stateMachine"
+import { tableBox } from "./truthTable"
+import { STATE_RADIUS, stateAt, transitionAt } from "../Circuits/stateGeometry"
 import { busTick, pointOf } from "../Circuits/wirePath"
 
 export const GRID = 5
@@ -9,6 +12,7 @@ const PIN_SNAP = 10
 const WIRE_SNAP = 6
 const HANDLE_SNAP = 8
 const FRAME_SNAP = 4
+const BACKDROP_SIZE = [200, 150]
 const TICK_REACH = 8
 const FIT_MARGIN = 20
 // A saved wire may stop short of a pin, hidden under the part it runs into.
@@ -28,7 +32,7 @@ export const isBus = (net) => net.width !== undefined
 export const originOf = (doc) => doc.origin ?? [0, 0]
 
 const nextId = (doc, base) => {
-	const taken = new Set([...doc.instances, ...doc.nets, ...(doc.labels ?? [])].map((item) => item.id))
+	const taken = new Set([...doc.instances, ...doc.nets, ...(doc.labels ?? []), ...(doc.backdrops ?? [])].map((item) => item.id))
 	let n = 1
 	while (taken.has(`${base}_${n}`)) {
 		n += 1
@@ -39,7 +43,7 @@ const nextId = (doc, base) => {
 const partBase = (component) => component.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase()
 
 export const addInstance = (doc, component, center) => {
-	const part = PARTS[component]
+	const part = shapeOf({ component })
 	const [ox, oy] = part.origin ?? [0, 0]
 	const at = snapPoint([center[0] - ox - part.size[0] / 2, center[1] - oy - part.size[1] / 2])
 	const id = nextId(doc, partBase(component))
@@ -52,6 +56,12 @@ export const addLabel = (doc, at) => {
 	const id = nextId(doc, "label")
 	const label = { id, text: "Label", at: snapPoint(at) }
 	return { doc: { ...doc, labels: [...(doc.labels ?? []), label] }, id }
+}
+
+export const addBackdrop = (doc, center) => {
+	const id = nextId(doc, "backdrop")
+	const at = snapPoint([center[0] - BACKDROP_SIZE[0] / 2, center[1] - BACKDROP_SIZE[1] / 2])
+	return { doc: { ...doc, backdrops: [...(doc.backdrops ?? []), { id, at, size: BACKDROP_SIZE }] }, id }
 }
 
 const isJunction = (net, point, line) => net.route.some((other) => {
@@ -129,6 +139,78 @@ export const updateInstance = (doc, id, change) => {
 	}
 }
 
+// A new mode or bus can remove a pin, move it or change its size, and whatever was
+// on it comes off. The rest stays connected.
+export const reconfigureInstance = (doc, id, change) => {
+	const before = doc.instances.find((instance) => instance.id === id)
+	const { bused, ...others } = change
+	const { bused: _, ...kept } = before
+	const after = { ...kept, ...others, ...(bused === undefined ? {} : { bused }) }
+	
+	const [old, next] = [pinsFor(before), pinsFor(after)]
+	const survives = (prop) => next[prop] !== undefined && same(next[prop].at, old[prop].at)
+		&& next[prop].width === old[prop].width
+	const stays = (terminal) => {
+		const [owner, prop] = terminal.split(".")
+		return owner !== id || survives(prop)
+	}
+	
+	return pruneMachine({
+		...doc,
+		instances: doc.instances.map((instance) => {
+			if (instance !== before) {
+				return instance
+			}
+			if (after.bind === undefined) {
+				return after
+			}
+			return { ...after, bind: Object.fromEntries(Object.entries(after.bind).filter(([prop]) => survives(prop))) }
+		}),
+		nets: doc.nets.map((net) => ({ ...net, connect: net.connect.filter(stays) })),
+	})
+}
+
+const pinOf = (doc, { instance, prop }) => pinsFor(doc.instances.find(({ id }) => id === instance))[prop]
+
+// Pins set to a bus take only a bus of their size, and the rest take only a wire.
+const pinRefusal = (pin, width) => {
+	if (width === undefined) {
+		return pin.width === undefined ? undefined : `That pin takes a ${pin.width}-bit bus. Draw a bus to it.`
+	}
+	if (pin.bus !== true) {
+		return "That pin takes a wire. Put it on a bus in the side panel first."
+	}
+	return pin.width === undefined || pin.width === width
+		? undefined
+		: `That pin takes ${pin.width} bits, and this bus has ${width}.`
+}
+
+// Ids can't hold spaces, or the dot that ends one in a net's `connect`.
+export const changeId = (doc, from, to) => {
+	const taken = [...doc.instances, ...doc.nets, ...(doc.labels ?? [])].some((item) => item.id === to)
+	if (taken || !/^[^\s.]+$/.test(to)) {
+		return doc
+	}
+	
+	const renamed = (id) => id === from ? to : id
+	const terminal = (end) => {
+		const [owner, prop] = end.split(".")
+		return `${renamed(owner)}.${prop}`
+	}
+	
+	return renameTerminals({
+		...doc,
+		instances: doc.instances.map((instance) => ({ ...instance, id: renamed(instance.id) })),
+		nets: doc.nets.map((net) => ({
+			...net,
+			id: renamed(net.id),
+			connect: net.connect.map(terminal),
+			...(net.taps ? { taps: net.taps.map((tap) => ({ ...tap, bus: renamed(tap.bus) })) } : {}),
+			...(net.inverseOf ? { inverseOf: renamed(net.inverseOf) } : {}),
+		})),
+	}, from, to)
+}
+
 export const rotateInstance = (doc, id) => {
 	const instance = doc.instances.find((i) => i.id === id)
 	return updateInstance(doc, id, { rotation: ((instance.rotation ?? 0) + 90) % 360 })
@@ -147,8 +229,22 @@ export const updateItem = (doc, collection, id, change) => ({
 const removeItem = (doc, item) => {
 	const { kind, id } = item
 	
-	if (kind === "frame") {
+	if (kind === "frame" || kind === "table") {
 		return doc
+	}
+	
+	if (kind === "transition") {
+		return { ...doc, transitions: doc.transitions.filter((transition) => transition.id !== id) }
+	}
+	
+	if (kind === "state") {
+		const states = doc.states.filter((state) => state.id !== id)
+		return {
+			...doc,
+			states,
+			initial: doc.initial === id ? states[0]?.id ?? null : doc.initial,
+			transitions: doc.transitions.filter((transition) => transition.from !== id && transition.to !== id),
+		}
 	}
 	
 	if (kind === "segment") {
@@ -172,15 +268,19 @@ const removeItem = (doc, item) => {
 		return { ...doc, labels: doc.labels.filter((label) => label.id !== id) }
 	}
 	
+	if (kind === "backdrop") {
+		return { ...doc, backdrops: doc.backdrops.filter((backdrop) => backdrop.id !== id) }
+	}
+	
 	if (kind === "instance") {
-		return {
+		return pruneMachine({
 			...doc,
 			instances: doc.instances.filter((instance) => instance.id !== id),
 			nets: doc.nets.map((net) => ({
 				...net,
 				connect: net.connect.filter((terminal) => terminal.split(".")[0] !== id),
 			})),
-		}
+		})
 	}
 	
 	return {
@@ -203,6 +303,9 @@ export const allItems = (doc) => [
 	...doc.instances.map(({ id }) => ({ kind: "instance", id })),
 	...doc.nets.filter((net) => net.route?.length > 0).map(({ id }) => ({ kind: "net", id })),
 	...(doc.labels ?? []).map(({ id }) => ({ kind: "label", id })),
+	...(doc.backdrops ?? []).map(({ id }) => ({ kind: "backdrop", id })),
+	...(doc.states ?? []).map(({ id }) => ({ kind: "state", id })),
+	...(doc.at ? [{ kind: "table", id: "table" }] : []),
 ]
 
 // Shrinks or grows the box to sit just around everything in the circuit.
@@ -211,7 +314,10 @@ export const fitFrame = (doc) => {
 	const boxes = [
 		...doc.instances.map(extentOf),
 		...(doc.labels ?? []).map(labelBox),
+		...(doc.backdrops ?? []).map(backdropBox),
 		...routed.map(([x, y]) => [x, y, x, y]),
+		...(doc.states ?? []).map(stateBox),
+		...(doc.at ? [tableBox(doc)] : []),
 	]
 	
 	if (boxes.length === 0) {
@@ -230,11 +336,15 @@ const labelBox = (label) => [
 	label.at[0] - 3, label.at[1] - 14, label.at[0] + Math.max(label.text.length, 1) * 7 + 3, label.at[1] + 4,
 ]
 
+export const backdropBox = ({ at: [x, y], size: [width, height] }) => [x, y, x + width, y + height]
+
 const insideBox = ([left, top, right, bottom], [x1, y1, x2, y2]) => {
 	return left >= x1 && top >= y1 && right <= x2 && bottom <= y2
 }
 
 const pointInBox = ([x, y], box) => insideBox([x, y, x, y], box)
+
+const stateBox = ({ at: [x, y] }) => [x - STATE_RADIUS, y - STATE_RADIUS, x + STATE_RADIUS, y + STATE_RADIUS]
 
 // The corners of a net inside a box, leaving out any end that's on a pin or a bus:
 // those belong to what they're connected to.
@@ -260,6 +370,9 @@ export const itemsInBox = (doc, box, wires = true) => {
 		...routed.filter(whole).map(({ id }) => ({ kind: "net", id })),
 		...routed.filter((net) => !whole(net)).flatMap((net) => nodesInBox(doc, net, box)),
 		...(doc.labels ?? []).filter((label) => insideBox(labelBox(label), box)).map(({ id }) => ({ kind: "label", id })),
+		...(doc.backdrops ?? []).filter((backdrop) => insideBox(backdropBox(backdrop), box)).map(({ id }) => ({ kind: "backdrop", id })),
+		...(doc.states ?? []).filter((state) => insideBox(stateBox(state), box)).map(({ id }) => ({ kind: "state", id })),
+		...(doc.at && insideBox(tableBox(doc), box) ? [{ kind: "table", id: "table" }] : []),
 	]
 }
 
@@ -331,17 +444,22 @@ export const copyItems = (doc, selection) => {
 	const wholeNets = [...idsOf(selection, "net"), ...idsOf(selection, "segment")]
 	const copied = (terminal) => instanceIds.includes(terminal.split(".")[0])
 	
+	const stateIds = idsOf(selection, "state")
+	
 	return {
 		instances: doc.instances.filter((instance) => instanceIds.includes(instance.id)),
 		labels: (doc.labels ?? []).filter((label) => idsOf(selection, "label").includes(label.id)),
+		backdrops: (doc.backdrops ?? []).filter((backdrop) => idsOf(selection, "backdrop").includes(backdrop.id)),
 		nets: doc.nets.filter((net) => {
 			return wholeNets.includes(net.id) || (net.connect.length > 1 && net.connect.every(copied))
 		}),
+		states: (doc.states ?? []).filter((state) => stateIds.includes(state.id)),
+		transitions: (doc.transitions ?? []).filter(({ from, to }) => stateIds.includes(from) && stateIds.includes(to)),
 	}
 }
 
-export const isEmptyCopy = ({ instances, labels, nets }) => {
-	return instances.length + labels.length + nets.length === 0
+export const isEmptyCopy = ({ instances, labels, backdrops, nets, states }) => {
+	return instances.length + labels.length + backdrops.length + nets.length + states.length === 0
 }
 
 // Adds a copy with fresh ids. Connections to anything outside the copy are dropped,
@@ -360,6 +478,7 @@ export const pasteItems = (doc, copy, delta) => {
 	
 	const instances = moved.instances.map((instance) => place(instance, "instances", partBase(instance.component)))
 	const labels = moved.labels.map((label) => place(label, "labels", "label"))
+	const backdrops = moved.backdrops.map((backdrop) => place(backdrop, "backdrops", "backdrop"))
 	const nets = moved.nets.map((net) => place(net, "nets", baseId(net.id)))
 	
 	const remapped = nets.map((net) => {
@@ -378,12 +497,36 @@ export const pasteItems = (doc, copy, delta) => {
 	})
 	
 	const pastedIds = remapped.map((net) => net.id)
+	const stateIds = {}
+	const taken = (list, prefix) => {
+		let n = 1
+		while (list.some((item) => item.id === `${prefix}${n}`)) {
+			n += 1
+		}
+		return `${prefix}${n}`
+	}
+	
+	const states = moved.states.reduce((placed, state) => {
+		stateIds[state.id] = taken([...(doc.states ?? []), ...placed], "s")
+		return [...placed, { ...state, id: stateIds[state.id] }]
+	}, [])
+	const transitions = moved.transitions.reduce((placed, transition) => {
+		const id = taken([...(doc.transitions ?? []), ...placed], "t")
+		return [...placed, { ...transition, id, from: stateIds[transition.from], to: stateIds[transition.to] }]
+	}, [])
+	
 	return {
-		doc: { ...current, nets: [...current.nets.filter((net) => !pastedIds.includes(net.id)), ...remapped] },
+		doc: {
+			...current,
+			nets: [...current.nets.filter((net) => !pastedIds.includes(net.id)), ...remapped],
+			...(doc.states ? { states: [...doc.states, ...states], transitions: [...doc.transitions, ...transitions] } : {}),
+		},
 		selection: [
 			...instances.map(({ id }) => ({ kind: "instance", id })),
 			...remapped.map(({ id }) => ({ kind: "net", id })),
 			...labels.map(({ id }) => ({ kind: "label", id })),
+			...backdrops.map(({ id }) => ({ kind: "backdrop", id })),
+			...states.map(({ id }) => ({ kind: "state", id })),
 		],
 	}
 }
@@ -400,10 +543,20 @@ export const moveSelection = (doc, selection, delta) => {
 	}, doc)
 	const nets = idsOf(selection, "net")
 	const labels = idsOf(selection, "label")
+	const backdrops = idsOf(selection, "backdrop")
 	const nodesOf = (id) => selection.filter((item) => item.kind === "node" && item.id === id).map((item) => item.at)
+	
+	const stateIds = idsOf(selection, "state")
 	
 	return {
 		...moved,
+		...(moved.states ? { states: moved.states.map((state) => {
+			return stateIds.includes(state.id) ? { ...state, at: shift(state.at) } : state
+		}) } : {}),
+		...(moved.backdrops ? { backdrops: moved.backdrops.map((backdrop) => {
+			return backdrops.includes(backdrop.id) ? { ...backdrop, at: shift(backdrop.at) } : backdrop
+		}) } : {}),
+		...(moved.at && idsOf(selection, "table").length > 0 ? { at: shift(moved.at) } : {}),
 		nets: moved.nets.map((net) => {
 			const original = doc.nets.find((candidate) => candidate.id === net.id)
 			if (nets.includes(net.id)) {
@@ -418,12 +571,17 @@ export const moveSelection = (doc, selection, delta) => {
 export const setBusWidth = (doc, id, width) => {
 	const bus = doc.nets.find((net) => net.id === id)
 	const bits = bus.bits?.slice(0, width)
+	const fits = (terminal) => {
+		const [instance, prop] = terminal.split(".")
+		const size = pinOf(doc, { instance, prop })?.width
+		return size === undefined || size === width
+	}
 	
 	return {
 		...doc,
 		nets: doc.nets.map((net) => {
 			if (net === bus) {
-				return { ...net, width, ...(bits ? { bits } : {}) }
+				return { ...net, width, connect: net.connect.filter(fits), ...(bits ? { bits } : {}) }
 			}
 			if (net.taps === undefined) {
 				return net
@@ -632,6 +790,11 @@ export const dropRouteEnd = (base, doc, hit, point) => {
 				: refused("That pin is on a different kind of net.")
 		}
 		
+		const refusal = pinRefusal(pinOf(placed, target), net.width)
+		if (refusal !== undefined) {
+			return refused(refusal)
+		}
+		
 		const connected = { ...current, connect: [...current.connect, terminal] }
 		return driverCount(connected) > 1
 			? refused("That would give one net two outputs.")
@@ -652,14 +815,10 @@ export const dropRouteEnd = (base, doc, hit, point) => {
 
 // Turns a drawn route into a net, joining whatever its two ends landed on.
 export const finishDrawing = (doc, points, bus, targets) => {
-	const net = {
-		id: nextId(doc, bus ? "bus" : "wire"),
-		...(bus ? { width: DEFAULT_BUS_WIDTH } : {}),
-		connect: [],
-		route: [points],
-	}
+	const net = { id: nextId(doc, bus ? "bus" : "wire"), connect: [], route: [points] }
 	
 	const joined = []
+	const newPins = []
 	const addJoin = (id) => {
 		if (!joined.includes(id)) {
 			joined.push(id)
@@ -674,6 +833,7 @@ export const finishDrawing = (doc, points, bus, targets) => {
 				addJoin(onNet.id)
 			} else if (!net.connect.includes(terminal)) {
 				net.connect.push(terminal)
+				newPins.push(pinOf(doc, target))
 			}
 		} else if (target?.type === "net") {
 			const hit = doc.nets.find((n) => n.id === target.net)
@@ -690,6 +850,15 @@ export const finishDrawing = (doc, points, bus, targets) => {
 	const merged = joined.map((id) => doc.nets.find((n) => n.id === id))
 	if (merged.some((n) => isBus(n) !== bus)) {
 		return { error: "That pin is on a different kind of net." }
+	}
+	
+	// A new bus takes its size from the first pin that has one.
+	if (bus) {
+		net.width = merged[0]?.width ?? newPins.find((pin) => pin.width !== undefined)?.width ?? DEFAULT_BUS_WIDTH
+	}
+	const refusal = newPins.map((pin) => pinRefusal(pin, net.width)).find((message) => message !== undefined)
+	if (refusal !== undefined) {
+		return { error: refusal }
 	}
 	
 	const [keep, ...absorbed] = merged
@@ -782,7 +951,7 @@ export const addPoint = (doc, at) => {
 }
 
 export const pinsOf = (doc) => doc.instances.flatMap((instance) => {
-	return Object.keys(PARTS[instance.component].pins).map((prop) => ({
+	return Object.keys(pinsFor(instance)).map((prop) => ({
 		instance: instance.id, prop, at: pinPoint(instance, prop),
 	}))
 })
@@ -798,37 +967,63 @@ export const drawTarget = (doc, point) => {
 	return hit === undefined ? undefined : { type: "net", net: hit.net, point: hit.point }
 }
 
-const FRAME_HANDLES = { nw: [0, 0], n: [.5, 0], ne: [1, 0], e: [1, .5], se: [1, 1], s: [.5, 1], sw: [0, 1], w: [0, .5] }
+const BOX_HANDLES = { nw: [0, 0], n: [.5, 0], ne: [1, 0], e: [1, .5], se: [1, 1], s: [.5, 1], sw: [0, 1], w: [0, .5] }
 
-export const frameHandles = (doc) => {
-	const [x, y] = originOf(doc)
-	return Object.entries(FRAME_HANDLES).map(([name, [fx, fy]]) => ({
-		name, at: [x + doc.size[0] * fx, y + doc.size[1] * fy],
+export const boxHandles = ([left, top, right, bottom]) => {
+	return Object.entries(BOX_HANDLES).map(([name, [fx, fy]]) => ({
+		name, at: [left + (right - left) * fx, top + (bottom - top) * fy],
 	}))
 }
 
-export const resizeFrame = (doc, handle, delta) => {
+export const frameHandles = (doc) => {
 	const [x, y] = originOf(doc)
-	const [width, height] = doc.size
-	
+	return boxHandles([x, y, x + doc.size[0], y + doc.size[1]])
+}
+
+const resizedBox = ([x, y], [width, height], handle, delta) => {
 	let [left, top, right, bottom] = [x, y, x + width, y + height]
 	if (handle.includes("w")) left = Math.min(left + delta[0], right - MIN_SIZE)
 	if (handle.includes("e")) right = Math.max(right + delta[0], left + MIN_SIZE)
 	if (handle.includes("n")) top = Math.min(top + delta[1], bottom - MIN_SIZE)
 	if (handle.includes("s")) bottom = Math.max(bottom + delta[1], top + MIN_SIZE)
 	
-	return { ...doc, origin: [left, top], size: [right - left, bottom - top] }
+	return { at: [left, top], size: [right - left, bottom - top] }
+}
+
+export const resizeFrame = (doc, handle, delta) => {
+	const { at, size } = resizedBox(originOf(doc), doc.size, handle, delta)
+	return { ...doc, origin: at, size }
+}
+
+export const resizeBackdrop = (doc, id, handle, delta) => {
+	const backdrop = doc.backdrops.find((item) => item.id === id)
+	return updateItem(doc, "backdrops", id, resizedBox(backdrop.at, backdrop.size, handle, delta))
 }
 
 const inBox = ([x, y], [left, top, right, bottom]) => x >= left && x <= right && y >= top && y <= bottom
 
 export { boxOf, labelBox }
 
+export const backdropAt = (doc, point) => {
+	return [...(doc.backdrops ?? [])].reverse().find((backdrop) => inBox(point, backdropBox(backdrop)))
+}
+
+// A backdrop carries what's sitting on it, including any smaller backdrops.
+export const backdropContents = (doc, id) => {
+	return itemsInBox(doc, backdropBox(doc.backdrops.find((backdrop) => backdrop.id === id)))
+}
+
+const selectedBackdrop = (doc, selection) => {
+	return selection.length === 1 && selection[0].kind === "backdrop"
+		? doc.backdrops?.find((backdrop) => backdrop.id === selection[0].id)
+		: undefined
+}
+
 const onTick = ([tickX, tickY], point) => {
 	return inBox(point, [tickX - TICK_REACH, tickY - 22, tickX + 22, tickY + TICK_REACH])
 }
 
-const onFrame = (doc, [x, y]) => {
+export const onFrame = (doc, [x, y]) => {
 	const [left, top] = originOf(doc)
 	const [right, bottom] = [left + doc.size[0], top + doc.size[1]]
 	const near = (a, b) => Math.abs(a - b) <= FRAME_SNAP
@@ -859,6 +1054,16 @@ export const hitTest = (doc, point, selection) => {
 		}
 	}
 	
+	const backdrop = selectedBackdrop(doc, selection)
+	if (backdrop !== undefined) {
+		const handle = boxHandles(backdropBox(backdrop)).find(({ at }) => {
+			return Math.abs(at[0] - point[0]) <= HANDLE_SNAP && Math.abs(at[1] - point[1]) <= HANDLE_SNAP
+		})
+		if (handle !== undefined) {
+			return { kind: "backdrop", id: backdrop.id, handle: handle.name }
+		}
+	}
+	
 	const placed = pointAt(doc, point)
 	if (placed !== undefined) {
 		return { kind: "point", ...placed }
@@ -874,6 +1079,11 @@ export const hitTest = (doc, point, selection) => {
 				}
 			}
 		}
+	}
+	
+	const state = doc.states && stateAt(doc, point)
+	if (state) {
+		return { kind: "state", id: state.id }
 	}
 	
 	const bus = doc.nets.find((net) => isBus(net) && net.route?.length > 0 && onTick(busTick(net), point))
@@ -894,6 +1104,17 @@ export const hitTest = (doc, point, selection) => {
 	const segment = segmentHit(doc, point, WIRE_SNAP)
 	if (segment !== undefined) {
 		return { kind: "net", id: segment.net, ...segment }
+	}
+	
+	const transition = doc.transitions && transitionAt(doc, point)
+	if (transition) {
+		return { kind: "transition", id: transition.id }
+	}
+	
+	// Only a backdrop that's already selected takes a press, so a drag across the others
+	// still draws a selection box.
+	if (backdrop !== undefined && inBox(point, backdropBox(backdrop))) {
+		return { kind: "backdrop", id: backdrop.id }
 	}
 	
 	return onFrame(doc, point) ? { kind: "frame" } : undefined
@@ -1020,6 +1241,9 @@ const shiftPoints = (doc, [dx, dy]) => {
 		...doc,
 		instances: doc.instances.map((instance) => ({ ...instance, at: shift(instance.at) })),
 		labels: (doc.labels ?? []).map((label) => ({ ...label, at: shift(label.at) })),
+		...(doc.backdrops ? { backdrops: doc.backdrops.map((backdrop) => ({ ...backdrop, at: shift(backdrop.at) })) } : {}),
+		...(doc.states ? { states: doc.states.map((state) => ({ ...state, at: shift(state.at) })) } : {}),
+		...(doc.at ? { at: shift(doc.at) } : {}),
 		nets: doc.nets.map((net) => ({
 			...net,
 			...(net.route ? { route: net.route.map((line) => line.map((point) => movedTo(point, shift(pointOf(point))))) } : {}),
@@ -1030,7 +1254,7 @@ const shiftPoints = (doc, [dx, dy]) => {
 	}
 }
 
-const LINE_PER_ITEM = ["instances", "nets", "labels"]
+const LINE_PER_ITEM = ["instances", "nets", "labels", "backdrops", "inputs", "outputs", "connections", "constants", "rows", "states", "transitions"]
 
 const compact = (value) => JSON.stringify(value, null, 1).replace(/\s*\n\s*/g, " ")
 	.replace(/\[ /g, "[").replace(/ \]/g, "]")
@@ -1039,15 +1263,13 @@ const compact = (value) => JSON.stringify(value, null, 1).replace(/\s*\n\s*/g, "
 export const finishedCircuit = (doc) => {
 	const { origin, ...rest } = doc
 	const [x, y] = originOf(doc)
-	const { labels, ...shifted } = shiftPoints(rest, [-x, -y])
-	return labels.length > 0 ? { ...shifted, labels } : shifted
+	const { labels, backdrops, ...shifted } = shiftPoints(rest, [-x, -y])
+	return { ...shifted, ...(labels.length > 0 ? { labels } : {}), ...(backdrops?.length > 0 ? { backdrops } : {}) }
 }
 
-// Writes one instance, net or label per line.
-export const exportCircuit = (doc) => {
-	const circuit = finishedCircuit(doc)
-	
-	const fields = Object.entries(circuit).map(([key, value]) => {
+// Writes one entry per line, so a file's diffs stay readable.
+export const formatDocument = (doc) => {
+	const fields = Object.entries(doc).map(([key, value]) => {
 		if (!LINE_PER_ITEM.includes(key)) {
 			return `\t${JSON.stringify(key)}: ${compact(value)}`
 		}
@@ -1058,8 +1280,7 @@ export const exportCircuit = (doc) => {
 	return `{\n${fields.join(",\n")}\n}\n`
 }
 
-export const parseCircuit = (text) => {
-	const doc = JSON.parse(text)
+export const checkCircuit = (doc) => {
 	if (doc.kind !== "circuit") {
 		throw new Error(`The editor opens circuit files, and this is a "${doc.kind}" file.`)
 	}

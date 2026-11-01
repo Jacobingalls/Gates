@@ -9,6 +9,6 @@
 	],
 	"nets": [
 		{ "id": "clock", "connect": ["button_1.output", "counter_1.clk"], "route": [[[50, 70], [155, 70]]] },
-		{ "id": "value", "connect": ["counter_1.setValue", "traffic_light_1.value"], "width": 2, "route": [[[295, 70], [400, 70]]], "tick": [350, 70] }
+		{ "id": "value", "connect": ["counter_1.setValue"], "width": 2, "route": [[[295, 70], [400, 70]]], "tick": [350, 70] }
 	]
 }

@@ -96,6 +96,15 @@
 	min-height: 0;
 }
 
+.editor-tabs {
+	display: inline-flex;
+	gap: 2px;
+}
+
+.editor-toolbar .editor-tabs button.current {
+	background: rgba(124, 156, 255, .35);
+}
+
 .editor-panel {
 	padding: 12px;
 	overflow-y: auto;
@@ -283,6 +292,12 @@
 	stroke-width: 1px;
 }
 
+.editor-rocker-half {
+	fill: #444;
+	stroke: #222;
+	stroke-width: 1px;
+}
+
 .circuit text.editor-button-label {
 	fill: #fff;
 	font-size: 24px;
@@ -404,4 +419,167 @@
 .editor-point-preview {
 	fill: var(--editor-accent);
 	opacity: .7;
+}
+
+.editor-surface[data-tool=state], .editor-surface[data-tool=transition] {
+	cursor: crosshair;
+}
+
+.editor-state-selection {
+	fill: none;
+	stroke: var(--editor-accent);
+	stroke-width: 1px;
+	stroke-dasharray: 4 3;
+}
+
+.editor-port {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 4px;
+}
+
+.editor-panel .editor-port input.editor-column-key, .editor-table input.editor-column-key {
+	flex: none;
+	width: 30px;
+	text-align: center;
+}
+
+.editor-port select {
+	flex: 1;
+	min-width: 0;
+}
+
+.editor-panel .editor-port input:not([type]) {
+	flex: 1;
+	min-width: 0;
+}
+
+.editor-row {
+	display: grid;
+	grid-template-columns: 16px minmax(0, 1fr) auto;
+	gap: 4px;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.editor-row > select:first-child {
+	grid-column: 1 / -1;
+}
+
+.editor-condition {
+	grid-template-columns: 60px minmax(0, 1fr);
+}
+
+.editor-condition .editor-condition-name {
+	grid-column: 1 / -1;
+	color: #ccd;
+}
+
+.editor-row-mark {
+	color: #99a;
+	text-align: center;
+}
+
+.editor-lut {
+	overflow-x: auto;
+	margin-bottom: 10px;
+}
+
+.editor-lut table {
+	border-collapse: collapse;
+}
+
+.editor-lut th, .editor-lut td {
+	padding: 2px 3px;
+	border: 1px solid #333;
+	text-align: center;
+	color: #ccd;
+	font-weight: normal;
+}
+
+.editor-lut th {
+	color: #99a;
+}
+
+.editor .editor-lut button {
+	min-width: 0;
+	width: 24px;
+	padding: 1px 0;
+	color: #99a;
+}
+
+.editor .editor-lut button.on {
+	color: #fff;
+	background: var(--editor-accent);
+}
+
+.editor-lut input {
+	width: 80px;
+}
+
+.editor-panel .editor-lut th input {
+	width: auto;
+	min-width: 0;
+	padding: 1px 2px;
+	border: none;
+	border-radius: 0;
+	background: none;
+	color: #ccd;
+	text-align: center;
+}
+
+.editor-panel .editor-lut th input::placeholder {
+	color: #99a;
+}
+
+.editor-panel .editor-port input.editor-constant-value {
+	flex: none;
+	width: 60px;
+}
+
+.editor-bench-table {
+	position: absolute;
+	cursor: move;
+}
+
+.editor-bench-table.selected {
+	outline: 1px dashed var(--editor-accent);
+	outline-offset: 3px;
+}
+
+.editor-bench-table td {
+	text-align: center;
+}
+
+.circuit .editor-cell {
+	position: static;
+	min-width: 0;
+	width: 34px;
+	padding: 1px 0;
+	font-size: 13px;
+	background: rgba(255, 255, 255, .06);
+	border: none;
+	border-radius: 5px;
+	color: #ccd;
+}
+
+.circuit .editor-cell::after {
+	content: none;
+}
+
+.circuit .editor-cell.on {
+	background: rgba(124, 156, 255, .55);
+	color: #fff;
+}
+
+.circuit text.editor-binding {
+	font-size: 11px;
+	fill: var(--editor-accent);
+}
+
+.bus-row th {
+	font-size: 12px;
+	font-weight: normal;
+	color: #9ab;
+	border-bottom: 1px solid #667;
 }
