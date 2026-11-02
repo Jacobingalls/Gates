@@ -162,7 +162,15 @@ const InstancePanel = ({ doc, instance, apply, onZoom, onRenameId }) => {
 				return reconfigureInstance(current, id, { props: { ...instance.props, selectBits }, bused: instance.bused })
 			})}
 		/>}
-		{part.defaults?.width !== undefined && <DecimalField
+		{instance.component === "WalkLight" && <Field label="Time">
+			<input
+				type="checkbox"
+				aria-label="Show a time"
+				checked={instance.props?.timer !== false}
+				onChange={(event) => apply(setTimer(instance, event.target.checked))}
+			/>
+		</Field>}
+		{part.defaults?.width !== undefined && instance.props?.timer !== false && <DecimalField
 			label="Bits" value={instance.props?.width ?? part.defaults.width}
 			accepts={part.defaults.selectBits === undefined ? isBusWidth : isDataWidth}
 			onChange={(width) => apply((current) => {
@@ -213,6 +221,12 @@ const InstancePanel = ({ doc, instance, apply, onZoom, onRenameId }) => {
 const setRestartable = (instance, on) => (doc) => {
 	const { restartable: _, ...others } = instance.props
 	return reconfigureInstance(doc, instance.id, { props: on ? { ...others, restartable: true } : others }, ["output"])
+}
+
+// Goes through reconfiguring so turning it off takes any wires off the time pins. The face
+// changes width, which moves the other pins on a flipped or rotated part, so they follow.
+const setTimer = (instance, timer) => (doc) => {
+	return reconfigureInstance(doc, instance.id, { props: { ...instance.props, timer } }, ["walk", "wait"])
 }
 
 const setControlType = (instance, controlType) => (doc) => {

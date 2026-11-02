@@ -106,10 +106,13 @@ const speakerShape = ({ small }) => {
 //
 // An `optional` pin is left alone when a part connects itself, and a `clock` pin takes
 // a state machine's clock. `label` names a pin that needs saying even on its own.
+// A pin with `side: "bottom"` leaves through the bottom edge rather than the nearer side.
 //
 // A `bank` is a set of pins an instance can gather onto one bus pin, called `prop`,
 // which sits at `at` when it takes them all. `bused` is what's gathered by default, and
 // `highFirst` makes the first pin the bus's top bit. Parts with `modes` pick their bank.
+//
+// `offFace` marks a block's pin that its face doesn't name, as the rest of a block's do.
 export const PARTS = {
 	KeyboardButton: {
 		title: "Button", Component: KeyboardButton, category: "Inputs & Outputs", icon: "button", keywords: "key switch input",
@@ -134,7 +137,7 @@ export const PARTS = {
 	},
 	WalkLight: {
 		title: "Walk Light", Component: WalkLight, category: "Inputs & Outputs", icon: "walkLight",
-		keywords: "wait pedestrian crossing countdown timer output", sized: walkLightShape, defaults: { width: 7 },
+		keywords: "wait pedestrian crossing countdown timer output", sized: walkLightShape, defaults: { width: 7, timer: true },
 	},
 	Speaker: {
 		title: "Speaker", Component: Speaker, category: "Inputs & Outputs", icon: "speaker", keywords: "sound audio beep tone chirp output",
@@ -401,8 +404,12 @@ const BLOCK_CATEGORIES = ["Memory", "Math", "Timing"]
 
 // The short lead a pin shows, from past the edge of the part back to the pin.
 export const stubOf = (part, pin) => {
-	const [ox] = part.origin ?? [0, 0]
+	const [ox, oy] = part.origin ?? [0, 0]
 	const [x, y] = pin.at
+	if (pin.side === "bottom") {
+		return [[x, oy + part.size[1] + STUB_LENGTH], [x, y]]
+	}
+	
 	const leftSide = x < ox + part.size[0] / 2
 	return [[leftSide ? ox - STUB_LENGTH : ox + part.size[0] + STUB_LENGTH, y], [x, y]]
 }
@@ -429,6 +436,38 @@ export const PartStubs = ({ instance, nets }) => {
 	return Object.entries(pinsFor(instance)).filter(([prop]) => !isWired(nets, instance, prop)).map(([prop, pin]) => {
 		const stub = stubOf(part, pin).map((point) => placePoint(instance, point))
 		return <path key={prop} className={pin.bus ? "bus-stub" : "gate-line"} d={stubPath(stub)} />
+	})
+}
+
+export const pinLabel = (prop) => prop === "output" || prop === "on" ? "Signal" : prop.replace(/^set/, "")
+
+const PIN_LABEL_GAP = 7
+const UNNAMED_PIN = pinLabel("output")
+
+// Each pin's name, just inside the part and running in from the pin, for only the bus pins
+// or only the wire pins. Pins a block's face already names don't need it, and neither does
+// a pin that's only called Signal, which says nothing the part's own name doesn't.
+export const PinLabels = ({ instance, bus }) => {
+	const part = shapeOf(instance)
+	const onFace = (pin) => BLOCK_CATEGORIES.includes(part.category) && pin.offFace !== true
+	const pins = Object.entries(pinsFor(instance)).filter(([, pin]) => (pin.bus === true) === bus && !onFace(pin))
+	const named = pins.map(([prop, pin]) => [prop, pin, pin.label?.(instance) ?? pinLabel(prop)])
+	
+	return named.filter(([, , name]) => name !== UNNAMED_PIN).map(([prop, pin, name]) => {
+		const [outer, inner] = stubOf(part, pin).map((point) => placePoint(instance, point))
+		const [dx, dy] = [Math.sign(outer[0] - inner[0]), Math.sign(outer[1] - inner[1])]
+		const [x, y] = [inner[0] - dx * PIN_LABEL_GAP, inner[1] - dy * PIN_LABEL_GAP]
+		
+		return <text
+			key={prop}
+			className="editor-pin-label"
+			x={x} y={y}
+			textAnchor={dx + dy > 0 ? "end" : "start"}
+			dominantBaseline="central"
+			transform={dy === 0 ? undefined : `rotate(90,${x},${y})`}
+		>
+			{name}
+		</text>
 	})
 }
 
@@ -471,8 +510,6 @@ export const shownColumns = (table) => {
 		...(variable.bus === undefined ? {} : { bus: names[variable.bus] ?? variable.bus }),
 	}))
 }
-
-export const pinLabel = (prop) => prop === "output" || prop === "on" ? "Signal" : prop.replace(/^set/, "")
 
 // The state machine's own clock, as the end of a connection.
 export const MACHINE_CLOCK = "machine.clock"

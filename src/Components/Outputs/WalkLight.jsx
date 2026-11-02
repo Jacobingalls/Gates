@@ -5,6 +5,7 @@ import { SevenSegment, hexSegments } from "./SevenSegment"
 // The face is drawn at this scale, so these sizes are before it's applied.
 const SCALE = .5
 const WIDTH = 150
+const TIMELESS_WIDTH = 80
 const HEIGHT = 100
 const DIGIT_SCALE = [.6, 1]
 const DIGIT_LEFT = 75
@@ -13,15 +14,22 @@ const DIGIT_TOP = 10
 const DIGIT_LIMIT = 100
 const MESH_ID = "walk-light-mesh"
 
-const bit = (y, label, optional) => ({ at: [0, y], dir: "in", optional, label: () => label })
+const SIDE_PINS = { walk: 10, wait: 20 }
+const BOTTOM_PINS = { showTime: 50, time: 60 }
 
-export const walkLightShape = ({ width }) => ({
-	size: [WIDTH * SCALE, HEIGHT * SCALE],
+const bit = (at, label) => ({ at, dir: "in", label: () => label })
+const bottomBit = (x, label) => ({ ...bit([x, HEIGHT * SCALE], label), side: "bottom", optional: true })
+
+// Without `timer` the face narrows to just the hand and person, and has no time pins.
+export const walkLightShape = ({ timer, width }) => ({
+	size: [(timer ? WIDTH : TIMELESS_WIDTH) * SCALE, HEIGHT * SCALE],
 	pins: {
-		walk: bit(10, "Walk", false),
-		wait: bit(20, "Wait", false),
-		showTime: bit(30, "Show Time", true),
-		time: { ...bit(40, "Time", true), bus: true, width },
+		walk: { ...bit([0, SIDE_PINS.walk], "Walk"), optional: false },
+		wait: { ...bit([0, SIDE_PINS.wait], "Wait"), optional: false },
+		...(timer ? {
+			showTime: bottomBit(BOTTOM_PINS.showTime, "Show Time"),
+			time: { ...bottomBit(BOTTOM_PINS.time, "Time"), bus: true, width },
+		} : {}),
 	},
 })
 
@@ -47,8 +55,9 @@ const Digit = ({ x, value }) => {
 
 // Only a display, styled on a California crossing signal: each input shows its own part
 // of the face, and whatever drives it decides when, including flashing the hand.
-export const WalkLight = ({x, y, walk, wait, showTime, time}) => {
+export const WalkLight = ({x, y, walk, wait, timer, showTime, time}) => {
 	const seconds = Number(time ?? 0) % DIGIT_LIMIT
+	const faceWidth = timer ? WIDTH : TIMELESS_WIDTH
 	
 	return <g transform={`translate(${x},${y}) scale(${SCALE})`}>
 		<defs>
@@ -56,11 +65,11 @@ export const WalkLight = ({x, y, walk, wait, showTime, time}) => {
 				<path className="walk-mesh-line" d="M0,0 H7 M0,0 V7" />
 			</pattern>
 		</defs>
-		<rect className="walk-housing" width={WIDTH} height={HEIGHT} rx="12" />
+		<rect className="walk-housing" width={faceWidth} height={HEIGHT} rx="12" />
 		{wait === true && <Hand />}
 		{walk === true && <Person />}
-		{showTime === true && seconds >= 10 && <Digit x={DIGIT_LEFT} value={Math.floor(seconds / 10)} />}
-		{showTime === true && <Digit x={DIGIT_LEFT + DIGIT_STEP} value={seconds % 10} />}
-		<rect fill={`url(#${MESH_ID})`} width={WIDTH} height={HEIGHT} rx="12" />
+		{timer && showTime === true && seconds >= 10 && <Digit x={DIGIT_LEFT} value={Math.floor(seconds / 10)} />}
+		{timer && showTime === true && <Digit x={DIGIT_LEFT + DIGIT_STEP} value={seconds % 10} />}
+		<rect fill={`url(#${MESH_ID})`} width={faceWidth} height={HEIGHT} rx="12" />
 	</g>
 }

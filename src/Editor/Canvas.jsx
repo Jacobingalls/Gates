@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import classNames from "classnames";
 
-import { PARTS, PartStubs, PlacedPart, labelText, outputProps, shownColumns } from "../Circuits/parts"
+import { PARTS, PartStubs, PinLabels, PlacedPart, labelText, outputProps, shownColumns } from "../Circuits/parts"
 import { TruthTableBusRow } from "../Circuits/TruthTable"
 import { BackdropLayer, LabelLayer, NetLayer, PartTag } from "../Circuits/CircuitDiagram"
 import { StateCard, StateGraph } from "../Circuits/StateMachineDiagram"
@@ -652,9 +652,10 @@ export const Canvas = ({ history, selection, setSelection, tool, setTool, setSta
 						/>
 					})}
 					
-					{drawing && pinsOf(doc).map(({ instance, prop, at }) => {
+					{drawing && pinsOf(doc).filter(({ bus }) => bus === (tool === "bus")).map(({ instance, prop, at }) => {
 						return <circle key={`${instance}.${prop}`} className="editor-pin" cx={at[0]} cy={at[1]} r={4} />
 					})}
+					{drawing && doc.instances.map((instance) => <PinLabels key={instance.id} instance={instance} bus={tool === "bus"} />)}
 					
 					{doc.instances.filter((i) => selectedIds("instance").includes(i.id)).map((instance) => {
 						return <SelectionBox key={instance.id} box={boxOf(instance)} />

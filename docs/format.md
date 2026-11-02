@@ -141,8 +141,12 @@ its own, so whatever drives it decides when each part shows, including flashing 
 | `showTime` | The orange number, while high |
 | `time` | The number to show, as a binary bus |
 
-`props.width` sets the size of `time`, 7 bits by default. The face has two digits, so a larger number shows
-its last two. With nothing on them, all three parts stay dark.
+`walk` and `wait` are on the left edge, and `showTime` and `time` are on the bottom edge. `props.width` sets
+the size of `time`, 7 bits by default. The face has two digits, so a larger number shows its last two. With
+nothing on them, all three parts stay dark.
+
+`props.timer` set to `false` drops the number, along with the `showTime` and `time` pins, and narrows the
+face to the hand and person. It's `true` by default.
 
 ### Countdown
 

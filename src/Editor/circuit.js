@@ -962,8 +962,8 @@ export const addPoint = (doc, at) => {
 }
 
 export const pinsOf = (doc) => doc.instances.flatMap((instance) => {
-	return Object.keys(pinsFor(instance)).map((prop) => ({
-		instance: instance.id, prop, at: pinPoint(instance, prop),
+	return Object.entries(pinsFor(instance)).map(([prop, pin]) => ({
+		instance: instance.id, prop, at: pinPoint(instance, prop), bus: pin.bus === true,
 	}))
 })
 

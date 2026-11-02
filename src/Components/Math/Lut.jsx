@@ -19,7 +19,7 @@ const addressBank = (addressBits, columns) => {
 	return {
 		prop: "address", at: [0, FIRST_PIN], highFirst: true, bused: names, label: columns?.address ?? "Address",
 		pins: Object.fromEntries(names.map((name, i) => {
-			return [name, { at: [0, pinY(i)], dir: "in", label: () => columns?.[name] ?? name }]
+			return [name, { at: [0, pinY(i)], dir: "in", offFace: true, label: () => columns?.[name] ?? name }]
 		})),
 	}
 }
@@ -32,7 +32,7 @@ export const lutShape = ({ addressBits, dataBits, split, bused, columns }) => {
 	const outputs = split
 		? Array.from({ length: dataBits }, (_, i) => {
 			const bit = dataBits - 1 - i
-			return [bitProp(bit), { at: [WIDTH, pinY(i)], dir: "out", label: () => columns?.[`Q${bit}`] ?? `Q${bit}` }]
+			return [bitProp(bit), { at: [WIDTH, pinY(i)], dir: "out", offFace: true, label: () => columns?.[`Q${bit}`] ?? `Q${bit}` }]
 		})
 		: [["setValue", { at: [WIDTH, FIRST_PIN], dir: "out", bus: true, width: dataBits, label: () => columns?.value ?? "Value" }]]
 	

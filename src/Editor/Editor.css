@@ -351,6 +351,15 @@
 	stroke-width: 1px;
 }
 
+.circuit text.editor-pin-label {
+	fill: #fff;
+	font-size: 9px;
+	stroke: #16161c;
+	stroke-width: 3px;
+	paint-order: stroke;
+	pointer-events: none;
+}
+
 .editor-draft {
 	fill: none;
 	stroke: var(--editor-accent);
