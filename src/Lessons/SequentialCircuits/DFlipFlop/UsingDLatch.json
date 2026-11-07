@@ -4,19 +4,19 @@
 	"size": [530, 250],
 	"instances": [
 		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 40], "props": { "keyboard": "1" } },
-		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 185], "props": { "keyboard": "2" } },
+		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 180], "props": { "keyboard": "2" } },
 		{ "id": "d_latch_1", "component": "DLatch", "at": [150, 30] },
-		{ "id": "not_gate_1", "component": "NotGate", "at": [175, 180] },
+		{ "id": "not_gate_1", "component": "NotGate", "at": [170, 180] },
 		{ "id": "d_latch_2", "component": "DLatch", "at": [350, 30] },
-		{ "id": "light_1", "component": "Led", "at": [510, 55] },
-		{ "id": "light_2", "component": "Led", "at": [510, 85] }
+		{ "id": "light_1", "component": "Led", "at": [510, 50] },
+		{ "id": "light_2", "component": "Led", "at": [510, 80] }
 	],
 	"nets": [
-		{ "id": "d", "connect": ["button_1.output", "d_latch_1.d"], "route": [[[50, 55], [150, 55]]] },
-		{ "id": "clk", "connect": ["button_2.output", "d_latch_1.en", "not_gate_1.input"], "route": [[[50, 205], [100, 205], [100, 85], [150, 85]], [[100, 205], [175, 205]]] },
-		{ "id": "notClk", "connect": ["not_gate_1.output", "d_latch_2.en"], "route": [[[220, 205], [300, 205], [300, 85], [350, 85]]] },
-		{ "id": "nextQ", "connect": ["d_latch_1.setQ", "d_latch_2.d"], "route": [[[250, 55], [350, 55]]] },
-		{ "id": "currentQ", "connect": ["d_latch_2.setQ", "light_1.on"], "route": [[[450, 55], [500, 55]]] },
-		{ "id": "not_currentQ", "inverseOf": "currentQ", "connect": ["light_2.on"], "route": [[[450, 85], [500, 85]]] }
+		{ "id": "d", "connect": ["button_1.output", "d_latch_1.d"], "route": [[[50, 60], [100, 60], [100, 50], [150, 50]]] },
+		{ "id": "clk", "connect": ["button_2.output", "d_latch_1.en", "not_gate_1.input"], "route": [[[50, 200], [100, 200], [100, 80], [150, 80]], [[100, 200], [170, 200]]] },
+		{ "id": "notClk", "connect": ["not_gate_1.output", "d_latch_2.en"], "route": [[[220, 200], [300, 200], [300, 80], [350, 80]]] },
+		{ "id": "nextQ", "connect": ["d_latch_1.setQ", "d_latch_2.d"], "route": [[[250, 50], [350, 50]]] },
+		{ "id": "currentQ", "connect": ["d_latch_2.setQ", "light_1.on"], "route": [[[450, 50], [510, 50]]] },
+		{ "id": "not_currentQ", "inverseOf": "currentQ", "connect": ["light_2.on"], "route": [[[450, 80], [510, 80]]] }
 	]
 }

@@ -7,13 +7,13 @@
 		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 130], "props": { "keyboard": "2" } },
 		{ "id": "nor_gate_1", "component": "NorGate", "at": [150, 30] },
 		{ "id": "nor_gate_2", "component": "NorGate", "at": [150, 120] },
-		{ "id": "light_1", "component": "Led", "at": [300, 55] },
-		{ "id": "light_2", "component": "Led", "at": [300, 145] }
+		{ "id": "light_1", "component": "Led", "at": [300, 50] },
+		{ "id": "light_2", "component": "Led", "at": [300, 140] }
 	],
 	"nets": [
-		{ "id": "w1", "connect": ["button_1.output", "nor_gate_1.input1"], "route": [[[50, 50], [160, 50]]] },
+		{ "id": "w1", "connect": ["button_1.output", "nor_gate_1.input1"], "route": [[[50, 50], [110, 50], [110, 40], [160, 40]]] },
 		{ "id": "w4", "connect": ["button_2.output", "nor_gate_2.input2"], "route": [[[50, 150], [160, 150]]] },
-		{ "id": "w3", "connect": ["nor_gate_1.output", "nor_gate_2.input1", "light_1.on"], "route": [[[200, 55], [250, 55], [100, 140], [160, 140]], [[200, 55], [300, 55]]], "delay": 1 },
-		{ "id": "w2", "connect": ["nor_gate_1.input2", "nor_gate_2.output", "light_2.on"], "route": [[[200, 145], [250, 145], [100, 60], [160, 60]], [[200, 145], [300, 145]]] }
+		{ "id": "w3", "connect": ["nor_gate_1.output", "nor_gate_2.input1", "light_1.on"], "route": [[[200, 50], [250, 50], [100, 130], [160, 130]], [[200, 50], [300, 50]]], "delay": 1 },
+		{ "id": "w2", "connect": ["nor_gate_1.input2", "nor_gate_2.output", "light_2.on"], "route": [[[200, 140], [250, 140], [100, 60], [160, 60]], [[200, 140], [300, 140]]] }
 	]
 }

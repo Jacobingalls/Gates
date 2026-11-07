@@ -5,12 +5,12 @@
 	"instances": [
 		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" } },
 		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 80], "props": { "keyboard": "2" } },
-		{ "id": "nor_gate_1", "component": "NorGate", "at": [165, 50] },
-		{ "id": "light_1", "component": "Led", "at": [330, 75] }
+		{ "id": "nor_gate_1", "component": "NorGate", "at": [160, 50] },
+		{ "id": "light_1", "component": "Led", "at": [330, 70] }
 	],
 	"nets": [
-		{ "id": "w1", "connect": ["button_1.output", "nor_gate_1.input1"], "route": [[[50, 50], [100, 50], [100, 65], [175, 65]]] },
-		{ "id": "w2", "connect": ["button_2.output", "nor_gate_1.input2"], "route": [[[50, 100], [100, 100], [100, 85], [175, 85]]] },
-		{ "id": "w3", "connect": ["nor_gate_1.output", "light_1.on"], "route": [[[215, 75], [330, 75]]] }
+		{ "id": "w1", "connect": ["button_1.output", "nor_gate_1.input1"], "route": [[[50, 50], [100, 50], [100, 60], [170, 60]]] },
+		{ "id": "w2", "connect": ["button_2.output", "nor_gate_1.input2"], "route": [[[50, 100], [100, 100], [100, 80], [170, 80]]] },
+		{ "id": "w3", "connect": ["nor_gate_1.output", "light_1.on"], "route": [[[210, 70], [330, 70]]] }
 	]
 }

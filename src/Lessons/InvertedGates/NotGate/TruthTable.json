@@ -2,7 +2,7 @@
 	"format": 1,
 	"kind": "truthTable",
 	"size": [350, 100],
-	"at": [110, 7],
+	"at": [110, 10],
 	"inputs": [
 		{ "name": "Button" }
 	],

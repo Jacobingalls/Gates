@@ -15,7 +15,7 @@ import {
 
 const LIMITS = { inputs: MAX_INPUTS, outputs: MAX_OUTPUTS }
 
-const RADIUS_RANGE = { min: 20, max: 80, step: 2 }
+const RADIUS_RANGE = { min: 20, max: 80, step: 10 }
 
 const NEW_BUS = "new"
 
@@ -285,6 +285,22 @@ const BusValue = ({ doc, pin, label, value, onChange }) => {
 	</select>
 }
 
+// A wire is high or low, or set by a constant that fits it, which the menu has to list for
+// the constant to show as chosen.
+const WireValue = ({ doc, pin, label, value, onChange }) => {
+	const fitting = doc.constants.filter(({ name }) => fitsPin(doc, name, pin))
+
+	return <select
+		aria-label={label}
+		value={value}
+		onChange={({ target }) => onChange(/^\d+$/.test(target.value) ? Number(target.value) : target.value)}
+	>
+		{fitting.map(({ name, value: number }) => <option key={name} value={name}>{name} ({number})</option>)}
+		<option value="1">High</option>
+		<option value="0">Low</option>
+	</select>
+}
+
 const AssertionRow = ({ doc, item, list, terminal, value, apply }) => {
 	const name = terminalName(doc, terminal)
 	const targets = assertionTargets(doc)
@@ -302,14 +318,7 @@ const AssertionRow = ({ doc, item, list, terminal, value, apply }) => {
 		<span className="editor-row-mark">=</span>
 		{pin.bus
 			? <BusValue doc={doc} pin={pin} label={`${name} value`} value={value} onChange={setValue} />
-			: <select
-				aria-label={`${name} value`}
-				value={value}
-				onChange={(event) => setValue(Number(event.target.value))}
-			>
-				<option value="1">High</option>
-				<option value="0">Low</option>
-			</select>}
+			: <WireValue doc={doc} pin={pin} label={`${name} value`} value={value} onChange={setValue} />}
 		<button
 			type="button"
 			aria-label={`Remove assertion on ${name}`}

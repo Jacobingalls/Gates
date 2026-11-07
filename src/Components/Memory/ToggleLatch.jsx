@@ -26,11 +26,11 @@ export const ToggleLatch = ({x, y, t, clk, reset, setQ, setNotQ}) => {
 		setNotQ(!currentQ)
 	}, [currentQ, setQ, setNotQ]);
 	
-	return <Block title="Toggle Latch" x={x} y={y} width={100} height={110}>
-		<BlockLabel x={10} y={25} on={t}>T</BlockLabel>
-		<BlockLabel x={10} y={55} on={clk}>CLK</BlockLabel>
-		<BlockLabel x={10} y={85} on={reset}>RST</BlockLabel>
-		<BlockLabel x={90} y={25} align="end" on={currentQ}>Q</BlockLabel>
-		<InvertedBlockLabel x={90} y={55} align="end" width={-12} on={!currentQ}>Q</InvertedBlockLabel>
+	return <Block title="Toggle Latch" x={x} y={y} width={100} height={100}>
+		<BlockLabel x={10} y={20} on={t}>T</BlockLabel>
+		<BlockLabel x={10} y={50} on={clk}>CLK</BlockLabel>
+		<BlockLabel x={10} y={80} on={reset}>RST</BlockLabel>
+		<BlockLabel x={90} y={20} align="end" on={currentQ}>Q</BlockLabel>
+		<InvertedBlockLabel x={90} y={50} align="end" width={-12} on={!currentQ}>Q</InvertedBlockLabel>
 	</Block>
 }

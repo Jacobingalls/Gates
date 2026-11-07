@@ -29,12 +29,12 @@ export const EightBitShiftRegister = ({x, y, d, clk, setQ0, setQ1, setQ2, setQ3,
 	}, [d, clk, hasSetState, setQ0, setQ1, setQ2, setQ3, setQ4, setQ5, setQ6, setQ7, currentState, nextState]);
 	
 	const outs = currentState.map((state, i) => {
-		return <BlockLabel x={90} y={25 + (i * 30)} align="end" on={currentState[i]}>Q{i}</BlockLabel>
+		return <BlockLabel x={90} y={20 + (i * 30)} align="end" on={currentState[i]}>Q{i}</BlockLabel>
 	})
 	
-	return <Block title="8-Bit Shift Register" x={x} y={y} width={100} height={260}>
-		<BlockLabel x={10} y={25} on={d}>D</BlockLabel>
-		<BlockLabel x={10} y={55} on={clk}>CLK</BlockLabel>
+	return <Block title="8-Bit Shift Register" x={x} y={y} width={100} height={250}>
+		<BlockLabel x={10} y={20} on={d}>D</BlockLabel>
+		<BlockLabel x={10} y={50} on={clk}>CLK</BlockLabel>
 		{outs}
 	</Block>
 }

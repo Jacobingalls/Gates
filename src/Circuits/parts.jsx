@@ -2,9 +2,8 @@ import { Placement } from "../Components/Block"
 import { Led } from "../Components/Outputs/Led"
 import { TRAFFIC_VERSIONS, TrafficLight, trafficLightShape } from "../Components/Outputs/TrafficLight"
 import { NumberDisplay, numberDisplayShape } from "../Components/Outputs/NumberDisplay"
-import { SEVEN_SEGMENT_SIZE, SMALL_SCALE, SevenSegment, hexSegments } from "../Components/Outputs/SevenSegment"
+import { SEVEN_SEGMENT_SIZE, SMALL_SCALE, SMALL_SEVEN_SEGMENT_SIZE, SevenSegment, hexSegments } from "../Components/Outputs/SevenSegment"
 import { KeyboardButton } from "../Components/Buttons/KeyboardButton.jsx"
-import { RockerSwitch } from "../Components/Buttons/RockerSwitch"
 import { ToggleSwitch } from "../Components/Buttons/ToggleSwitch"
 import { AndGate, NandGate } from "../Components/Gates/AndGates"
 import { NotGate } from "../Components/Gates/NotGates"
@@ -26,6 +25,7 @@ import { PedestrianController, pedestrianControllerShape } from "../Components/T
 import { SPEAKER_SIZE, Speaker } from "../Components/Outputs/Speaker"
 import { WalkLight, walkLightShape } from "../Components/Outputs/WalkLight"
 import { Demux, Mux, demuxShape, muxShape } from "../Components/Math/Mux"
+import { GRID } from "./grid"
 import { pointOf } from "./wirePath"
 
 const input = (x, y) => ({ at: [x, y], dir: "in" })
@@ -43,9 +43,9 @@ const SevenSegmentPart = ({ x, y, mode, small, color, point, ...bits }) => {
 	return <SevenSegment x={x} y={y} segments={segments} scale={small ? SMALL_SCALE : 1} color={color} point={point === true} />
 }
 
-const gatePins = { input1: input(10, 15), input2: input(10, 35), output: output(50, 25) }
+const gatePins = { input1: input(10, 10), input2: input(10, 30), output: output(50, 20) }
 const gate = (title, Component, keywords) => ({
-	title, Component, keywords, category: "Gates", icon: "gate", size: [50, 50], pins: gatePins,
+	title, Component, keywords, category: "Gates", icon: "gate", size: [50, 40], pins: gatePins,
 })
 
 const segmentBank = {
@@ -59,17 +59,28 @@ const hexBank = {
 }
 
 const registerBank = {
-	prop: "setValue", at: [100, 130],
-	pins: Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`setQ${i}`, output(100, 25 + i * 30)])),
+	prop: "setValue", at: [100, 120],
+	pins: Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`setQ${i}`, output(100, 20 + i * 30)])),
 }
 
-const smallBank = (bank) => ({
-	...bank,
-	at: bank.at.map((length) => length * SMALL_SCALE),
-	pins: Object.fromEntries(Object.entries(bank.pins).map(([name, pin]) => {
-		return [name, { ...pin, at: pin.at.map((length) => length * SMALL_SCALE) }]
-	})),
-})
+const [SMALL_WIDTH, SMALL_HEIGHT] = SMALL_SEVEN_SEGMENT_SIZE
+
+const topPin = (x) => ({ ...input(x, 0), side: "top" })
+const bottomPin = (x) => ({ ...input(x, SMALL_HEIGHT), side: "bottom" })
+
+// A small digit is too short for a pin per row, so its pins sit around it, each near what it lights.
+const smallSegmentBank = {
+	...segmentBank, at: [0, 20],
+	pins: {
+		a: topPin(10), b: input(SMALL_WIDTH, 10), c: input(SMALL_WIDTH, 20), d: bottomPin(10),
+		e: input(0, 30), f: input(0, 10), g: input(0, 20),
+	},
+}
+
+const smallHexBank = {
+	...hexBank, at: [0, 20],
+	pins: { d8: input(0, 10), d4: input(0, 20), d2: input(0, 30), d1: bottomPin(10) },
+}
 
 const SEVEN_SEGMENT_MODES = {
 	segments: { title: "Segments", bank: segmentBank },
@@ -77,18 +88,18 @@ const SEVEN_SEGMENT_MODES = {
 }
 
 const SMALL_SEVEN_SEGMENT_MODES = {
-	segments: { title: "Segments", bank: smallBank(segmentBank) },
-	hex: { title: "Hex Number", bank: smallBank(hexBank) },
+	segments: { title: "Segments", bank: smallSegmentBank },
+	hex: { title: "Hex Number", bank: smallHexBank },
 }
 
 // The decimal point is on its own pin, beside it on the right, whichever input the part takes.
-const pointPin = (scale) => ({
-	point: { ...input(SEVEN_SEGMENT_SIZE[0] * scale, 70 * scale), optional: true, label: () => "Decimal Point" },
+const pointPin = (x, y) => ({
+	point: { ...input(x, y), optional: true, label: () => "Decimal Point" },
 })
 
 const sevenSegmentShape = ({ small }) => small
-	? { size: SEVEN_SEGMENT_SIZE.map((length) => length * SMALL_SCALE), modes: SMALL_SEVEN_SEGMENT_MODES, pins: pointPin(SMALL_SCALE) }
-	: { size: SEVEN_SEGMENT_SIZE, modes: SEVEN_SEGMENT_MODES, pins: pointPin(1) }
+	? { size: SMALL_SEVEN_SEGMENT_SIZE, modes: SMALL_SEVEN_SEGMENT_MODES, pins: pointPin(SMALL_WIDTH, 30) }
+	: { size: SEVEN_SEGMENT_SIZE, modes: SEVEN_SEGMENT_MODES, pins: pointPin(SEVEN_SEGMENT_SIZE[0], 70) }
 
 const speakerShape = ({ small }) => {
 	const [width, height] = SPEAKER_SIZE.map((length) => length * (small ? SMALL_SCALE : 1))
@@ -100,31 +111,27 @@ const speakerShape = ({ small }) => {
 // `origin` is where the part's box starts relative to the point it's drawn at.
 // Parts with no `icon` show a generic chip in the editor's library.
 //
-// `faceHeight` is how tall a part draws when that's less than the box it sits in.
-//
 // A part with `sized` works out its size and pins from an instance's props.
 //
 // An `optional` pin is left alone when a part connects itself, and a `clock` pin takes
 // a state machine's clock. `label` names a pin that needs saying even on its own.
-// A pin with `side: "bottom"` leaves through the bottom edge rather than the nearer side.
+// A pin with `side` of "top" or "bottom" leaves through that edge rather than the nearer side.
 //
 // A `bank` is a set of pins an instance can gather onto one bus pin, called `prop`,
 // which sits at `at` when it takes them all. `bused` is what's gathered by default, and
 // `highFirst` makes the first pin the bus's top bit. Parts with `modes` pick their bank.
 //
 // `offFace` marks a block's pin that its face doesn't name, as the rest of a block's do.
+//
+// Sizes and pins are in whole grid steps, or the parts around them can't line up.
 export const PARTS = {
 	KeyboardButton: {
 		title: "Button", Component: KeyboardButton, category: "Inputs & Outputs", icon: "button", keywords: "key switch input",
-		size: [40, 40], faceHeight: 34, pins: { output: output(40, 20) }, defaults: { keyboard: "1" }, html: true,
+		size: [40, 40], pins: { output: output(40, 20) }, defaults: { keyboard: "1" }, html: true,
 	},
 	ToggleSwitch: {
-		title: "Switch", Component: ToggleSwitch, category: "Inputs & Outputs", icon: "switch", keywords: "toggle latch input",
-		size: [60, 40], faceHeight: 35, pins: { output: output(60, 20) }, defaults: { keyboard: "1" }, html: true,
-	},
-	RockerSwitch: {
-		title: "Rocker Switch", Component: RockerSwitch, category: "Inputs & Outputs", icon: "rocker", keywords: "toggle latch key input",
-		size: [40, 40], faceHeight: 34, pins: { output: output(40, 20) }, defaults: { keyboard: "1" }, html: true,
+		title: "Switch", Component: ToggleSwitch, category: "Inputs & Outputs", icon: "switch", keywords: "toggle latch key rocker input",
+		size: [60, 40], pins: { output: output(60, 20) }, defaults: { keyboard: "1" }, html: true,
 	},
 	Led: {
 		title: "Light", Component: Led, category: "Inputs & Outputs", icon: "light", keywords: "led lamp output",
@@ -170,27 +177,27 @@ export const PARTS = {
 	XorGate: gate("Xor Gate", XorGate, "logic exclusive"),
 	NotGate: {
 		title: "Not Gate", Component: NotGate, category: "Gates", icon: "gate", keywords: "logic inverter",
-		size: [50, 50], pins: { input: input(0, 25), output: output(45, 25) },
+		size: [50, 40], pins: { input: input(0, 20), output: output(50, 20) },
 	},
 	NandGate: gate("Nand Gate", NandGate, "logic inverted"),
 	NorGate: gate("Nor Gate", NorGate, "logic inverted"),
 	XnorGate: gate("Xnor Gate", XnorGate, "logic inverted exclusive"),
 	SRLatch: {
 		title: "SR Latch", Component: SRLatch, category: "Memory", keywords: "set reset sequential",
-		size: [100, 80], pins: { s: input(0, 25), r: input(0, 55), setQ: output(100, 25), setNotQ: output(100, 55) },
+		size: [100, 70], pins: { s: input(0, 20), r: input(0, 50), setQ: output(100, 20), setNotQ: output(100, 50) },
 	},
 	DLatch: {
 		title: "D Latch", Component: DLatch, category: "Memory", keywords: "data enable sequential",
-		size: [100, 80], pins: { d: input(0, 25), en: input(0, 55), setQ: output(100, 25), setNotQ: output(100, 55) },
+		size: [100, 70], pins: { d: input(0, 20), en: input(0, 50), setQ: output(100, 20), setNotQ: output(100, 50) },
 	},
 	DFlipFlop: {
 		title: "D Flip-Flop", Component: DFlipFlop, category: "Memory", keywords: "data clock sequential",
-		size: [100, 80], pins: { d: input(0, 25), clk: input(0, 55), setQ: output(100, 25), setNotQ: output(100, 55) },
+		size: [100, 70], pins: { d: input(0, 20), clk: input(0, 50), setQ: output(100, 20), setNotQ: output(100, 50) },
 	},
 	ToggleLatch: {
 		title: "Toggle Latch", Component: ToggleLatch, category: "Memory", keywords: "t flip-flop divide clock reset sequential",
-		size: [100, 110], pins: {
-			t: input(0, 25), clk: input(0, 55), reset: input(0, 85), setQ: output(100, 25), setNotQ: output(100, 55),
+		size: [100, 100], pins: {
+			t: input(0, 20), clk: input(0, 50), reset: input(0, 80), setQ: output(100, 20), setNotQ: output(100, 50),
 		},
 	},
 	Register: {
@@ -199,7 +206,7 @@ export const PARTS = {
 	},
 	EightBitShiftRegister: {
 		title: "8-Bit Shift Register", Component: EightBitShiftRegister, category: "Memory", keywords: "serial clock sequential",
-		size: [100, 260], pins: { d: input(0, 25), clk: input(0, 55) }, bank: registerBank,
+		size: [100, 250], pins: { d: input(0, 20), clk: input(0, 50) }, bank: registerBank,
 	},
 	Bcd: {
 		title: "BCD", Component: Bcd, category: "Math", keywords: "binary coded decimal double dabble digits",
@@ -223,7 +230,7 @@ export const PARTS = {
 	},
 	Counter: {
 		title: "Counter", Component: Counter, category: "Math", keywords: "clock modulo count",
-		size: [140, 60], pins: { clk: input(0, 25), reset: input(0, 45), setValue: busOutput(140, 25), setOverflow: output(140, 45) },
+		size: [140, 60], pins: { clk: input(0, 20), reset: input(0, 40), setValue: busOutput(140, 20), setOverflow: output(140, 40) },
 		defaults: { modulo: 4 },
 	},
 }
@@ -325,12 +332,25 @@ const rotated = ([x, y], rotation) => {
 	}
 }
 
-// Where a point on a part ends up in the diagram, once the instance is placed.
+const isQuarterTurn = (instance) => (instance.rotation ?? 0) % 180 !== 0
+
+// A box turns about its centre, which leaves it half a step off the grid if its sides differ
+// by an odd number of steps. This puts it back. Parts that stay upright don't turn at all.
+const turnNudge = (part, instance) => {
+	const offGrid = (part.size[0] + part.size[1]) / 2 % GRID !== 0
+	return isQuarterTurn(instance) && offGrid && !part.html ? GRID / 2 : 0
+}
+
+// Where a point on a part ends up in the diagram, once the instance is placed. A part that
+// stays upright keeps its box, so what would turn with it runs around that box instead.
 export const placePoint = (instance, [x, y]) => {
-	const [px, py] = pivotOf(shapeOf(instance))
+	const part = shapeOf(instance)
+	const [px, py] = pivotOf(part)
 	const flipped = [(x - px) * (instance.flipX ? -1 : 1), (y - py) * (instance.flipY ? -1 : 1)]
 	const [dx, dy] = rotated(flipped, instance.rotation ?? 0)
-	return [instance.at[0] + px + dx, instance.at[1] + py + dy]
+	const stretch = part.html && isQuarterTurn(instance) ? part.size[0] / part.size[1] : 1
+	const nudge = turnNudge(part, instance)
+	return [instance.at[0] + px + dx * stretch + nudge, instance.at[1] + py + dy / stretch + nudge]
 }
 
 export const pinPoint = (instance, prop) => {
@@ -393,21 +413,23 @@ export const extentOf = (instance) => {
 }
 
 const placementTransform = (instance) => {
-	const [px, py] = pivotOf(shapeOf(instance))
+	const part = shapeOf(instance)
+	const [px, py] = pivotOf(part)
+	const nudge = turnNudge(part, instance)
 	const [cx, cy] = [instance.at[0] + px, instance.at[1] + py]
 	const scale = `scale(${instance.flipX ? -1 : 1},${instance.flipY ? -1 : 1})`
-	return `translate(${cx},${cy}) rotate(${instance.rotation ?? 0}) ${scale} translate(${-cx},${-cy})`
+	return `translate(${cx + nudge},${cy + nudge}) rotate(${instance.rotation ?? 0}) ${scale} translate(${-cx},${-cy})`
 }
 
-const STUB_LENGTH = 8
+const STUB_LENGTH = GRID / 2
 const BLOCK_CATEGORIES = ["Memory", "Math", "Timing"]
 
 // The short lead a pin shows, from past the edge of the part back to the pin.
 export const stubOf = (part, pin) => {
 	const [ox, oy] = part.origin ?? [0, 0]
 	const [x, y] = pin.at
-	if (pin.side === "bottom") {
-		return [[x, oy + part.size[1] + STUB_LENGTH], [x, y]]
+	if (pin.side !== undefined) {
+		return [[x, pin.side === "top" ? oy - STUB_LENGTH : oy + part.size[1] + STUB_LENGTH], [x, y]]
 	}
 	
 	const leftSide = x < ox + part.size[0] / 2
@@ -441,7 +463,7 @@ export const PartStubs = ({ instance, nets }) => {
 
 export const pinLabel = (prop) => prop === "output" || prop === "on" ? "Signal" : prop.replace(/^set/, "")
 
-const PIN_LABEL_GAP = 7
+const PIN_LABEL_GAP = GRID
 const UNNAMED_PIN = pinLabel("output")
 
 // Each pin's name, just inside the part and running in from the pin, for only the bus pins

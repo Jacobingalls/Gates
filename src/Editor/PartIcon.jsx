@@ -13,13 +13,6 @@ const ButtonIcon = () => <>
 	<rect className="editor-icon-body" x="6" y="5" width="12" height="9" rx="2" />
 </>
 
-const RockerIcon = () => <>
-	<path className="editor-icon-line" d="M20,12 h4" />
-	<rect className="editor-icon-body" x="4" y="3" width="16" height="18" rx="3" />
-	<path className="editor-icon-line" d="M4,12 h16" />
-	<path className="editor-icon-line" d="M12,6 v3 M10.5,15 h3 v3 h-3 Z" />
-</>
-
 const LightIcon = () => <>
 	<path className="editor-icon-line" d="M0,12 h6" />
 	<circle className="editor-icon-body" cx="13" cy="12" r="8" />
@@ -86,7 +79,7 @@ const DemuxIcon = () => <>
 const DRAWN_ICONS = {
 	backdrop: BackdropIcon, chip: ChipIcon, mux: MuxIcon, demux: DemuxIcon, button: ButtonIcon, light: LightIcon, trafficLight: TrafficLightIcon, text: TextIcon,
 	walkLight: WalkLightIcon, speaker: SpeakerIcon,
-	switch: SwitchIcon, rocker: RockerIcon, clock: ClockIcon, sevenSegment: SevenSegmentIcon, state: StateIcon,
+	switch: SwitchIcon, clock: ClockIcon, sevenSegment: SevenSegmentIcon, state: StateIcon,
 }
 
 // Gates draw themselves, so the library can't drift from what lands on the canvas.

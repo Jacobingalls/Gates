@@ -9,7 +9,7 @@ export const AndGate = ({x, y, input1, input2, output}) => {
 	return <g transform={`translate(${x},${y})`}>
 		<path 
 		  class="gate"
-		  d="M0,5 
+		  d="M0,0 
 			h 30
 			a 20 20, 0, 0, 1, 0 40 
 			h -30 
@@ -36,7 +36,7 @@ export const NandGate = ({x, y, input1, input2, output}) => {
 	return <g transform={`translate(${x},${y})`}>
 		<path 
 		  class="gate"
-		  d="M0,5 
+		  d="M0,0 
 			h 20
 			a 20 20, 0, 0, 1, 0 40 
 			h -20 
@@ -45,7 +45,7 @@ export const NandGate = ({x, y, input1, input2, output}) => {
 		
 		<circle 
 			class="gate"
-			cx="45" cy="25" r="5"
+			cx="45" cy="20" r="5"
 		/>
 		
 		{/*<rect 

@@ -10,6 +10,7 @@ const FIRST_LAMP = 20
 const LAMP_SPACING = 30
 const BOTTOM_ROOM = 20
 const LENS_RADIUS = 11
+const LAMP_RADIUS = 10
 
 const title = (word) => `${word[0].toUpperCase()}${word.slice(1)}`
 const ball = (color) => ({ pin: color, color, label: title(color) })
@@ -59,7 +60,7 @@ export const TrafficLight = ({ x, y, mode, ...inputs }) => {
 		{lamps.map(({ pin, color, direction }, i) => {
 			const on = inputs[pin] === true
 			return direction === undefined
-				? <Led key={pin} x={LAMP_X} y={lampY(i)} color={color} on={on} />
+				? <Led key={pin} x={LAMP_X} y={lampY(i)} r={LAMP_RADIUS} color={color} on={on} />
 				: <ArrowLamp key={pin} y={lampY(i)} color={color} direction={direction} on={on} />
 		})}
 	</g>

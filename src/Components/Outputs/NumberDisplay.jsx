@@ -1,16 +1,13 @@
 import { digitCount, toBcd } from "../Math/Bcd"
-import { SEVEN_SEGMENT_SIZE, SMALL_SCALE, SevenSegment, hexSegments } from "./SevenSegment"
+import { SEVEN_SEGMENT_SIZE, SMALL_SCALE, SMALL_SEVEN_SEGMENT_SIZE, SevenSegment, hexSegments } from "./SevenSegment"
 
-const DIGIT_GAP = 5
+const digitSize = (small) => small ? SMALL_SEVEN_SEGMENT_SIZE : SEVEN_SEGMENT_SIZE
 
 export const numberDisplayShape = ({ width, small }) => {
-	const digits = digitCount(width)
-	const scale = small ? SMALL_SCALE : 1
-	const [digitWidth, height] = SEVEN_SEGMENT_SIZE.map((length) => length * scale)
-	const gap = DIGIT_GAP * scale
+	const [digitWidth, height] = digitSize(small)
 	
 	return {
-		size: [digits * (digitWidth + gap) - gap, height],
+		size: [digitCount(width) * digitWidth, height],
 		pins: { value: { at: [0, height / 2], dir: "in", bus: true, width } },
 	}
 }
@@ -20,15 +17,14 @@ export const numberDisplayShape = ({ width, small }) => {
 // number differently: `value` is the same either way.
 export const NumberDisplay = ({ x, y, value, width, small, color, decimalPlaces }) => {
 	const digits = toBcd(value ?? 0, digitCount(width))
-	const scale = small ? SMALL_SCALE : 1
 	
 	return digits.map((digit, i) => {
 		const place = digits.length - 1 - i
 		return <SevenSegment
 			key={i}
-			x={x + place * (SEVEN_SEGMENT_SIZE[0] + DIGIT_GAP) * scale}
+			x={x + place * digitSize(small)[0]}
 			y={y}
-			scale={scale}
+			scale={small ? SMALL_SCALE : 1}
 			color={color}
 			segments={hexSegments(digit)}
 			point={i === decimalPlaces && i > 0 ? true : undefined}

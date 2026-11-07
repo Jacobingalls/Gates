@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Block, BlockLabel } from "../Block"
+import { gridLength } from "../../Circuits/grid"
 import { digitCount } from "../Math/Bcd"
 
 const MIN_WIDTH = 150
@@ -10,7 +11,7 @@ const HEIGHT = 80
 const PIN_YS = { start: 20, clk: 40, reset: 60, value: 20, zero: 40 }
 
 export const countdownShape = ({ width }) => {
-	const blockWidth = Math.max(MIN_WIDTH, LABEL_ROOM + digitCount(width) * DIGIT_WIDTH)
+	const blockWidth = gridLength(Math.max(MIN_WIDTH, LABEL_ROOM + digitCount(width) * DIGIT_WIDTH))
 	
 	return {
 		size: [blockWidth, HEIGHT],

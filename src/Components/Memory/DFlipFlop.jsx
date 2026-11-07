@@ -22,10 +22,10 @@ export const DFlipFlop = ({x, y, d, clk, setQ, setNotQ}) => {
 		setNotQ?.(!currentQ);
 	}, [currentQ, setNotQ]);
 	
-	return <Block title="D Flip-Flop" x={x} y={y} width={100} height={80}>
-		<BlockLabel x={10} y={25} on={d}>D</BlockLabel>
-		<BlockLabel x={10} y={55} on={clk}>CLK</BlockLabel>
-		<BlockLabel x={90} y={25} align="end" on={currentQ}>Q</BlockLabel>
-		<InvertedBlockLabel x={90} y={55} align="end" width={-12} on={!currentQ}>Q</InvertedBlockLabel>
+	return <Block title="D Flip-Flop" x={x} y={y} width={100} height={70}>
+		<BlockLabel x={10} y={20} on={d}>D</BlockLabel>
+		<BlockLabel x={10} y={50} on={clk}>CLK</BlockLabel>
+		<BlockLabel x={90} y={20} align="end" on={currentQ}>Q</BlockLabel>
+		<InvertedBlockLabel x={90} y={50} align="end" width={-12} on={!currentQ}>Q</InvertedBlockLabel>
 	</Block>
 }

@@ -4,9 +4,9 @@ import { Block, BlockLabel } from "../Block"
 
 const MIN_WIDTH = 100
 const SELECT_Y = 20
-const FIRST_DATA_Y = 45
+const FIRST_DATA_Y = 40
 const DATA_SPACING = 20
-const BOTTOM_ROOM = 25
+const BOTTOM_ROOM = 20
 const CHAR_WIDTH = 8
 const SIDE_ROOM = 40
 const WIDTH_STEP = 10

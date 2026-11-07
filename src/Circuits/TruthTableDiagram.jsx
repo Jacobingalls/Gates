@@ -22,7 +22,7 @@ export const TruthTableDiagram = ({ table }) => {
 	
 	const columns = shownColumns(table)
 	
-	const overlay = <TruthTable x={table.at[0]} y={table.at[1]}>
+	const overlay = <TruthTable x={table.at[0]} y={table.at[1]} columns={columns}>
 		<TruthTableBusRow columns={columns} lastInput={lastInput} />
 		<TruthTableRow>
 			{columns.map(({ name }, i) => {

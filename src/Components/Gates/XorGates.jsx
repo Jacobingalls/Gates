@@ -9,12 +9,12 @@ export const XorGate = ({x, y, input1, input2, output}) => {
 	return <g transform={`translate(${x},${y})`}>
 		<path 
 		  class="gate-line"
-		  d="M-1,5 a 21 21, 0, 0, 1, 0 40"
+		  d="M-1,0 a 21 21, 0, 0, 1, 0 40"
 		/>
 		
 		<path 
 		  class="gate"
-		  d="M10,5 
+		  d="M10,0 
 			a 25 25, 0, 0, 1, 0 40
 			a 50 50, 0, 0, 0, 40 -20
 			a 50 50, 0, 0, 0, -40 -20
@@ -41,12 +41,12 @@ export const XnorGate = ({x, y, input1, input2, output}) => {
 	return <g transform={`translate(${x},${y})`}>
 		<path 
 		  class="gate-line"
-		  d="M-1,5 a 21 21, 0, 0, 1, 0 40"
+		  d="M-1,0 a 21 21, 0, 0, 1, 0 40"
 		/>
 		
 		<path 
 		  class="gate"
-		  d="M10,5 
+		  d="M10,0 
 			a 25 25, 0, 0, 1, 0 40
 			a 50 50, 0, 0, 0, 35 -20
 			a 50 50, 0, 0, 0, -35 -20
@@ -55,7 +55,7 @@ export const XnorGate = ({x, y, input1, input2, output}) => {
 		
 		<circle 
 			class="gate"
-			cx="45" cy="25" r="5"
+			cx="45" cy="20" r="5"
 		/>
 		
 		{/*<rect 

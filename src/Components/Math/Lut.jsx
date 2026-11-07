@@ -3,10 +3,10 @@ import { useEffect } from "react";
 import { Block, BlockLabel } from "../Block"
 
 const WIDTH = 120
-const MIN_HEIGHT = 50
-const FIRST_PIN = 25
+const MIN_HEIGHT = 40
+const FIRST_PIN = 20
 const PIN_SPACING = 20
-const BOTTOM_ROOM = 15
+const BOTTOM_ROOM = 20
 
 const bitProp = (bit) => `setBit${bit}`
 const pinY = (i) => FIRST_PIN + i * PIN_SPACING

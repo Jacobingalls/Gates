@@ -5,14 +5,14 @@
 	"instances": [
 		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" } },
 		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 80], "props": { "keyboard": "2" } },
-		{ "id": "sr_latch_1", "component": "SRLatch", "at": [100, 25] },
+		{ "id": "sr_latch_1", "component": "SRLatch", "at": [100, 30] },
 		{ "id": "light_1", "component": "Led", "at": [260, 50] },
 		{ "id": "light_2", "component": "Led", "at": [260, 80] }
 	],
 	"nets": [
-		{ "id": "s", "connect": ["button_1.output", "sr_latch_1.s"], "route": [[[50, 50], [150, 50]]] },
-		{ "id": "r", "connect": ["button_2.output", "sr_latch_1.r"], "route": [[[50, 100], [75, 100], [75, 80], [100, 80]]] },
-		{ "id": "q", "connect": ["sr_latch_1.setQ", "light_1.on"], "route": [[[200, 50], [250, 50]]] },
-		{ "id": "notQ", "connect": ["sr_latch_1.setNotQ", "light_2.on"], "route": [[[200, 80], [250, 80]]] }
+		{ "id": "s", "connect": ["button_1.output", "sr_latch_1.s"], "route": [[[50, 50], [100, 50]]] },
+		{ "id": "r", "connect": ["button_2.output", "sr_latch_1.r"], "route": [[[50, 100], [70, 100], [70, 80], [100, 80]]] },
+		{ "id": "q", "connect": ["sr_latch_1.setQ", "light_1.on"], "route": [[[200, 50], [260, 50]]] },
+		{ "id": "notQ", "connect": ["sr_latch_1.setNotQ", "light_2.on"], "route": [[[200, 80], [260, 80]]] }
 	]
 }

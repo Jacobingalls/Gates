@@ -1,5 +1,5 @@
-import { bankOf, pinsFor } from "../Circuits/parts"
-import { blankCircuit, checkCircuit, finishedCircuit, formatDocument } from "./circuit"
+import { bankOf, pinPoint, pinsFor } from "../Circuits/parts"
+import { blankCircuit, checkCircuit, finishedCircuit, formatDocument, snapPoint, tidyRoutes, updateInstance } from "./circuit"
 import { blankMachine, checkMachine } from "./stateMachine"
 import { blankTable, checkTable } from "./truthTable"
 
@@ -17,6 +17,17 @@ const upgradeInstance = (instance) => {
 	
 	const pins = Object.keys(bankOf(part)?.pins ?? {}).map((name, i) => [name, value[i]])
 	return { ...part, bused: [], bind: { ...bind, ...Object.fromEntries(pins) } }
+}
+
+// The Rocker Switch is gone, and a Switch does the same. It's wider, so it moves over to keep
+// its pin where the rocker's was. A rocker had the same box and pin as a Button.
+const upgradeRocker = (instance) => {
+	if (instance.component !== "RockerSwitch") {
+		return instance
+	}
+	const pinAt = (component) => pinPoint({ ...instance, component }, "output")
+	const [was, now] = [pinAt("KeyboardButton"), pinAt("ToggleSwitch")]
+	return { ...instance, component: "ToggleSwitch", at: [instance.at[0] + was[0] - now[0], instance.at[1] + was[1] - now[1]] }
 }
 
 const upgradeTurnLight = (instance) => {
@@ -50,9 +61,38 @@ const clearOldLightPins = (doc) => {
 	}
 }
 
+const onGridPoint = (point) => {
+	const snapped = snapPoint(point)
+	return snapped[0] === point[0] && snapped[1] === point[1] ? point : snapped
+}
+
+const withAt = (item) => ({ ...item, at: onGridPoint(item.at) })
+
+// The grid used to be half as fine, so older files and drafts can have things half a step
+// off it, where dragging would keep them. This puts them back, bringing wires along.
+const onGrid = (doc) => {
+	const placed = doc.instances.reduce((current, instance) => {
+		const at = onGridPoint(instance.at)
+		if (at === instance.at) {
+			return current
+		}
+		return current.nets === undefined
+			? { ...current, instances: current.instances.map((other) => other === instance ? { ...other, at } : other) }
+			: updateInstance(current, instance.id, { at })
+	}, doc)
+
+	return {
+		...(placed === doc || placed.nets === undefined ? placed : tidyRoutes(placed)),
+		...(doc.at ? { at: onGridPoint(doc.at) } : {}),
+		...(doc.states ? { states: doc.states.map(withAt) } : {}),
+		...(doc.labels ? { labels: doc.labels.map(withAt) } : {}),
+		...(doc.backdrops ? { backdrops: doc.backdrops.map(withAt) } : {}),
+	}
+}
+
 const parsedWith = (check) => (text) => {
 	const doc = JSON.parse(text)
-	return check(clearOldLightPins({ ...doc, instances: doc.instances?.map(upgradeTurnLight).map(upgradeInstance) }))
+	return onGrid(check(clearOldLightPins({ ...doc, instances: doc.instances?.map(upgradeRocker).map(upgradeTurnLight).map(upgradeInstance) })))
 }
 
 // What the editor needs to know about each kind of file.

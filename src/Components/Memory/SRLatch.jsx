@@ -30,10 +30,10 @@ export const SRLatch = ({x, y, s, r, setQ, setNotQ}) => {
 		setNotQ(realNotQ);
 	}, [realQ, realNotQ, setQ, setNotQ]);
 	
-	return <Block title="SR Latch" x={x} y={y} width={100} height={80}>
-		<BlockLabel x={10} y={25} on={s}>S</BlockLabel>
-		<BlockLabel x={10} y={55} on={r}>R</BlockLabel>
-		<BlockLabel x={90} y={25} align="end" on={realQ}>Q</BlockLabel>
-		<InvertedBlockLabel x={90} y={55} align="end" width={-12} on={realNotQ}>Q</InvertedBlockLabel>
+	return <Block title="SR Latch" x={x} y={y} width={100} height={70}>
+		<BlockLabel x={10} y={20} on={s}>S</BlockLabel>
+		<BlockLabel x={10} y={50} on={r}>R</BlockLabel>
+		<BlockLabel x={90} y={20} align="end" on={realQ}>Q</BlockLabel>
+		<InvertedBlockLabel x={90} y={50} align="end" width={-12} on={realNotQ}>Q</InvertedBlockLabel>
 	</Block>
 }

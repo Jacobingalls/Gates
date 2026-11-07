@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import classNames from "classnames";
 
 import { PARTS, PartStubs, PinLabels, PlacedPart, labelText, outputProps, shownColumns } from "../Circuits/parts"
-import { TruthTableBusRow } from "../Circuits/TruthTable"
+import { TruthTableBusRow, TruthTableColumns, tableWidth } from "../Circuits/TruthTable"
 import { BackdropLayer, LabelLayer, NetLayer, PartTag } from "../Circuits/CircuitDiagram"
 import { StateCard, StateGraph } from "../Circuits/StateMachineDiagram"
 import { radiusOf, stateAt, transitionShape } from "../Circuits/stateGeometry"
@@ -65,10 +65,6 @@ const ButtonSymbol = ({ instance }) => {
 	return <g>
 		<rect className="editor-button-base" y={y + BUTTON_RAISE} {...face} />
 		<rect className="editor-button-face" y={y} {...face} />
-		{instance.component === "RockerSwitch" && <rect
-			className="editor-rocker-half"
-			x={x} y={y} width={BUTTON_FACE[0]} height={BUTTON_FACE[1] / 2} rx="5"
-		/>}
 		<text
 			className="editor-button-label"
 			text-anchor="middle"
@@ -85,11 +81,19 @@ const SwitchSymbol = ({ instance }) => {
 	return <g>
 		<rect className="editor-button-base" x={x} y={y} width={SWITCH_SIZE[0]} height={SWITCH_SIZE[1]} rx="5" />
 		<rect className="editor-button-face" x={x + 3} y={y + 3} width={SWITCH_SIZE[0] * .6} height={SWITCH_SIZE[1] - 6} rx="4" />
+		<text
+			className="editor-switch-label"
+			text-anchor="middle"
+			dominant-baseline="central"
+			x={x + 3 + SWITCH_SIZE[0] * .3} y={y + SWITCH_SIZE[1] / 2}
+		>
+			{instance.props?.keyboard}
+		</text>
 	</g>
 }
 
 const PartSymbol = ({ instance }) => {
-	if (instance.component === "KeyboardButton" || instance.component === "RockerSwitch") {
+	if (instance.component === "KeyboardButton") {
 		return <ButtonSymbol instance={instance} />
 	}
 	if (instance.component === "ToggleSwitch") {
@@ -108,7 +112,8 @@ const TableOnCanvas = ({ table, selected, apply }) => {
 		className={classNames("editor-bench-table", { selected })}
 		style={{ left: ORIGIN[0] + table.at[0], top: ORIGIN[1] + table.at[1] }}
 	>
-		<table>
+		<table style={{ width: tableWidth(shown) }}>
+			<TruthTableColumns columns={shown} />
 			<thead>
 				<TruthTableBusRow columns={shown} lastInput={lastInput} />
 				<tr>

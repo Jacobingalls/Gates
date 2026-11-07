@@ -9,7 +9,7 @@ export const OrGate = ({x, y, input1, input2, output}) => {
 	return <g transform={`translate(${x},${y})`}>
 		<path 
 		  class="gate"
-		  d="M0,5 
+		  d="M0,0 
 			a 25 25, 0, 0, 1, 0 40
 			a 50 50, 0, 0, 0, 50 -20
 			a 50 50, 0, 0, 0, -50 -20
@@ -36,7 +36,7 @@ export const NorGate = ({x, y, input1, input2, output}) => {
 	return <g transform={`translate(${x},${y})`}>
 		<path 
 		  class="gate"
-		  d="M0,5 
+		  d="M0,0 
 			a 25 25, 0, 0, 1, 0 40
 			a 50 50, 0, 0, 0, 45 -20
 			a 50 50, 0, 0, 0, -45 -20
@@ -45,7 +45,7 @@ export const NorGate = ({x, y, input1, input2, output}) => {
 		
 		<circle 
 			class="gate"
-			cx="45" cy="25" r="5"
+			cx="45" cy="20" r="5"
 		/>
 		
 		{/*<rect 

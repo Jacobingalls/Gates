@@ -10,15 +10,15 @@
 		{ "id": "and_gate_1", "component": "AndGate", "at": [250, 20] },
 		{ "id": "and_gate_2", "component": "AndGate", "at": [250, 100] },
 		{ "id": "nor_gate_1", "component": "NorGate", "at": [350, 60] },
-		{ "id": "light_1", "component": "Led", "at": [480, 85] }
+		{ "id": "light_1", "component": "Led", "at": [480, 80] }
 	],
 	"nets": [
-		{ "id": "w1", "connect": ["button_1.output", "not_gate_1.input", "and_gate_1.input1"], "route": [[[50, 50], [75, 50], [75, 40], [250, 40]], [[75, 50], [75, 90], { "hop": [75, 110] }, [75, 155], [150, 155]]] },
-		{ "id": "w2", "connect": ["button_2.output", "not_gate_2.input", "and_gate_2.input1"], "route": [[[50, 100], [100, 100], [100, 75], [150, 75]], [[100, 100], [100, 120], [250, 120]]] },
-		{ "id": "notW1", "connect": ["not_gate_1.output", "and_gate_2.input2"], "route": [[[195, 155], [225, 155], [225, 135], [250, 135]]] },
-		{ "id": "notW2", "connect": ["not_gate_2.output", "and_gate_1.input2"], "route": [[[195, 75], [225, 75], [225, 55], [250, 55]]] },
-		{ "id": "w3", "connect": ["and_gate_1.output", "nor_gate_1.input1"], "route": [[[300, 45], [325, 45], [325, 75], [355, 75]]] },
-		{ "id": "w4", "connect": ["and_gate_2.output", "nor_gate_1.input2"], "route": [[[300, 125], [325, 125], [325, 95], [355, 95]]] },
-		{ "id": "w5", "connect": ["nor_gate_1.output", "light_1.on"], "route": [[[400, 85], [470, 85]]] }
+		{ "id": "w1", "connect": ["button_1.output", "not_gate_1.input", "and_gate_1.input1"], "route": [[[50, 50], [70, 50], [70, 30], [260, 30]], [[70, 50], [70, 90], { "hop": [70, 110] }, [70, 150], [150, 150]]] },
+		{ "id": "w2", "connect": ["button_2.output", "not_gate_2.input", "and_gate_2.input1"], "route": [[[50, 100], [100, 100], [100, 70], [150, 70]], [[100, 100], [100, 110], [260, 110]]] },
+		{ "id": "notW1", "connect": ["not_gate_1.output", "and_gate_2.input2"], "route": [[[200, 150], [230, 150], [230, 130], [260, 130]]] },
+		{ "id": "notW2", "connect": ["not_gate_2.output", "and_gate_1.input2"], "route": [[[200, 70], [230, 70], [230, 50], [260, 50]]] },
+		{ "id": "w3", "connect": ["and_gate_1.output", "nor_gate_1.input1"], "route": [[[300, 40], [320, 40], [320, 70], [360, 70]]] },
+		{ "id": "w4", "connect": ["and_gate_2.output", "nor_gate_1.input2"], "route": [[[300, 120], [320, 120], [320, 90], [360, 90]]] },
+		{ "id": "w5", "connect": ["nor_gate_1.output", "light_1.on"], "route": [[[400, 80], [480, 80]]] }
 	]
 }

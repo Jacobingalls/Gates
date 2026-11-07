@@ -32,16 +32,19 @@ import truthTable from "./TruthTable.json"
 	"size": [350, 150],
 	"instances": [
 		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" } },
-		{ "id": "gate", "component": "AndGate", "at": [165, 50] },
-		{ "id": "light", "component": "Led", "at": [330, 75] }
+		{ "id": "gate", "component": "AndGate", "at": [160, 50] },
+		{ "id": "light", "component": "Led", "at": [330, 70] }
 	],
 	"nets": [
-		{ "id": "w1", "connect": ["button_1.output", "gate.input1"], "route": [[[50, 50], [100, 50], [100, 65], [175, 65]]] },
-		{ "id": "w3", "connect": ["gate.output", "light.on"], "route": [[[215, 75], [330, 75]]] }
+		{ "id": "w1", "connect": ["button_1.output", "gate.input1"], "route": [[[50, 50], [100, 50], [100, 60], [170, 60]]] },
+		{ "id": "w3", "connect": ["gate.output", "light.on"], "route": [[[210, 70], [330, 70]]] }
 	]
 }
 ```
 
+- Everything sits on a 10 px grid, which `GRID` in `src/Circuits/grid.js` sets: the editor's dots and snapping,
+  part positions, sizes and pins, wire corners, states and table edges. Pins on a block are usually 20 apart.
+  A part that's flipped or turned keeps its pins on the grid, nudged half a step if a quarter turn needs it.
 - An instance or net can have a `"name"`, which is what people read, while `id` is what the file connects
   by. A named part shows its name beside it. An output device with no name of its own takes the name of
   a named net it's on, and in a truth table the name of its variable or bus.
@@ -50,10 +53,11 @@ import truthTable from "./TruthTable.json"
   part's title if it has no name, in place of the block's own title. `hidden` shows neither.
 - `instances` are parts. `component` names an entry in `PARTS` in `src/Circuits/parts.jsx`, which
   also lists its box, pins and library details. `at` becomes its `x` and `y` props, and `props` are
-  passed through. To add a part, write the React component and add it to `PARTS`.
+  passed through. To add a part, write the React component and add it to `PARTS`,
+  with its size and pins in whole grid steps.
 - An instance can have `"rotation"` of 90, 180 or 270, and `"flipX"` or `"flipY"` of `true`. Block
-  labels stay upright and readable whichever way the part faces. Buttons and rocker switches always stay upright, and
-  only their pin moves, around the sides of the 40×40 grid square the raised button sits in.
+  labels stay upright and readable whichever way the part faces. Buttons and switches always stay upright, and
+  only their pin moves, around the sides of the box they sit in.
 - Every pin with no wire on it shows a short stub, worked out from `PARTS`, and a pin marked `bus` there
   shows a dimmed bus. Files don't store these.
 - A light's `props.color` is `red`, `yellow`, `green` or a `#rrggbb` color.
@@ -73,7 +77,7 @@ import truthTable from "./TruthTable.json"
   this, so the gates in a latch can settle. Which way such a latch powers up is a race, so its
   starting state can differ between page loads until a value is loaded.
 
-A top-level `labels` list holds text: `{ "id": "label_1", "text": "Clock", "at": [130, 35] }`, with
+A top-level `labels` list holds text: `{ "id": "label_1", "text": "Clock", "at": [130, 30] }`, with
 an optional `color`. `at` is the start of the text's baseline.
 
 A top-level `backdrops` list holds rounded boxes drawn under everything else, for grouping parts:
@@ -204,7 +208,7 @@ A clip plays once, so a repeating tone needs something repeating on `start`, suc
 small gap at each repeat. For a seamless repeat, set `props.loop`, which plays the clip for as long as `start`
 is high. The first 30 repeats have no gaps at all, and there's a small gap each time that many repeats.
 
-`props.small` draws the Speaker at half size, 25×25.
+`props.small` draws the Speaker at half size, 20×20, the same size as a light.
 
 Only one module on the site makes sound at a time, set with the speaker button in its section's header and
 remembered between visits. Turning one on turns off whichever had it, and turning it off leaves none. To add
@@ -275,7 +279,7 @@ Some parts have a group of pins, listed as their `bank` in `PARTS`, that can be 
 pin. `"bused"` on an instance lists which ones, and the rest stay separate:
 
 ```json
-{ "id": "register", "component": "EightBitShiftRegister", "at": [100, 25], "bused": ["setQ0", "setQ1", "setQ2", "setQ3"] }
+{ "id": "register", "component": "EightBitShiftRegister", "at": [100, 30], "bused": ["setQ0", "setQ1", "setQ2", "setQ3"] }
 ```
 
 | Part | Pins | Bus pin | Gathered by default |
@@ -293,7 +297,9 @@ to `true` lights it with nothing connected. A Number Display's `props.decimalPla
 digits in from the right, in the side panel's Decimal setting. It only changes how the number is shown, so a
 `value` of 123 with one place reads 12.3.
 
-The Seven Segment and Number Display also take `props.small`, which draws them at half size, and
+The Seven Segment and Number Display also take `props.small`, which draws each digit 30×40. A small digit has
+no room for a pin per row, so in Segments mode `a` is on top, `d` underneath, `f`, `g` and `e` on the left, and
+`b`, `c` and the point on the right. In Hex Number mode `d1` is underneath. They also take
 `props.color`, a `#rrggbb` color for the lit segments in place of the usual red.
 
 A bus needs at least two pins. Its first pin is bit 0, except on the Hex Number, where the first pin is
@@ -305,7 +311,7 @@ when it takes them all.
 A net with a `width` is a bus. It joins part pins like any net, and carries a number.
 
 ```json
-{ "id": "bus_1", "width": 4, "connect": [], "route": [[[250, 20], [250, 130]]], "bits": ["a", "b", "", ""], "tick": [250, 75] }
+{ "id": "bus_1", "width": 4, "connect": [], "route": [[[250, 20], [250, 130]]], "bits": ["a", "b", "", ""], "tick": [250, 70] }
 ```
 
 - `bits` names bits by position. A blank name shows the bit's number.
@@ -358,7 +364,7 @@ names each bus above its columns.
 	"format": 1,
 	"kind": "truthTable",
 	"size": [350, 150],
-	"at": [85, 3],
+	"at": [90, 0],
 	"inputs": [{ "name": "a" }, { "name": "b" }],
 	"outputs": [{ "name": "y" }],
 	"instances": [],
@@ -372,7 +378,8 @@ names each bus above its columns.
 }
 ```
 
-`at` places the table. Each row lists the inputs and then the outputs, and every input combination
+`at` places the table. Rows are 30 tall and columns are whole grid steps wide, so its edges stay on the grid.
+Each row lists the inputs and then the outputs, and every input combination
 needs a row. The row matching the inputs lights up and sets the outputs.
 
 ### State machines
@@ -384,7 +391,7 @@ needs a row. The row matching the inputs lights up and sets the outputs.
 	"machine": "moore",
 	"size": [600, 300],
 	"instances": [
-		{ "id": "run", "component": "RockerSwitch", "at": [10, 30], "props": { "keyboard": "1" } },
+		{ "id": "run", "component": "ToggleSwitch", "at": [10, 30], "props": { "keyboard": "1" } },
 		{ "id": "clock", "component": "Clock", "at": [100, 30], "props": { "frequency": 1, "duty": 50, "controlType": "enable" } },
 		{ "id": "walk", "component": "KeyboardButton", "at": [10, 90], "props": { "keyboard": "2" } },
 		{ "id": "light1", "component": "TrafficLight", "at": [450, 40] }
@@ -429,7 +436,7 @@ There are no variables. Everything names part pins directly, as `instance.prop`.
 - `constants` name numbers, for bus inputs, so a state can say what it means. Changing one changes
   everything that uses it.
 
-`at` is the centre of a state, and `radius` is its size, 30 unless set. A state's name wraps and shrinks to
+`at` is the centre of a state, and `radius` is its size, 30 unless set, in steps of 10 so its edge is on the grid. A state's name wraps and shrinks to
 fit inside it. `summary` is optional text saying what a state means, shown
 under it in place of what it asserts. In the editor, hovering over a state with a summary opens a card
 listing its assertions. While the machine runs, clicking any state jumps the machine there.

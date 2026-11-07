@@ -2,9 +2,11 @@ import { PARTS, boxOf, extentOf, pinPoint, pinsFor, shapeOf } from "../Circuits/
 import { pruneMachine, renameTerminals } from "./stateMachine"
 import { tableBox } from "./truthTable"
 import { radiusOf, stateAt, transitionAt, transitionLabelAt, transitionShape } from "../Circuits/stateGeometry"
+import { GRID, snap, snapPoint } from "../Circuits/grid"
 import { busTick, pointOf } from "../Circuits/wirePath"
 
-export const GRID = 5
+export { GRID, snap, snapPoint }
+
 export const MIN_SIZE = 50
 export const DEFAULT_BUS_WIDTH = 8
 
@@ -17,9 +19,6 @@ const TICK_REACH = 8
 const FIT_MARGIN = 20
 // A saved wire may stop short of a pin, hidden under the part it runs into.
 const PIN_REACH = 60
-
-export const snap = (value) => Math.round(value / GRID) * GRID
-export const snapPoint = ([x, y]) => [snap(x), snap(y)]
 
 const same = (a, b) => a[0] === b[0] && a[1] === b[1]
 const movedTo = (point, xy) => point.hop === undefined ? xy : { hop: xy }
@@ -969,7 +968,9 @@ export const pinsOf = (doc) => doc.instances.flatMap((instance) => {
 
 // What a wire would connect to if it ended here.
 export const drawTarget = (doc, point) => {
-	const pin = pinsOf(doc).find(({ at }) => Math.hypot(at[0] - point[0], at[1] - point[1]) <= PIN_SNAP)
+	const distanceTo = ({ at }) => Math.hypot(at[0] - point[0], at[1] - point[1])
+	const pin = pinsOf(doc).filter((candidate) => distanceTo(candidate) <= PIN_SNAP)
+		.reduce((nearest, candidate) => nearest === undefined || distanceTo(candidate) < distanceTo(nearest) ? candidate : nearest, undefined)
 	if (pin !== undefined) {
 		return { type: "pin", instance: pin.instance, prop: pin.prop, point: pin.at }
 	}

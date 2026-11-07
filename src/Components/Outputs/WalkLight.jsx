@@ -4,18 +4,18 @@ import { SevenSegment, hexSegments } from "./SevenSegment"
 
 // The face is drawn at this scale, so these sizes are before it's applied.
 const SCALE = .5
-const WIDTH = 150
+const WIDTH = 160
 const TIMELESS_WIDTH = 80
 const HEIGHT = 100
 const DIGIT_SCALE = [.6, 1]
-const DIGIT_LEFT = 75
+const DIGIT_LEFT = 80
 const DIGIT_STEP = 34
 const DIGIT_TOP = 10
 const DIGIT_LIMIT = 100
 const MESH_ID = "walk-light-mesh"
 
-const SIDE_PINS = { walk: 10, wait: 20 }
-const BOTTOM_PINS = { showTime: 50, time: 60 }
+const SIDE_PINS = { walk: 10, wait: 30 }
+const BOTTOM_PINS = { showTime: 50, time: 70 }
 
 const bit = (at, label) => ({ at, dir: "in", label: () => label })
 const bottomBit = (x, label) => ({ ...bit([x, HEIGHT * SCALE], label), side: "bottom", optional: true })

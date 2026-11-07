@@ -2,7 +2,7 @@
 	"format": 1,
 	"kind": "truthTable",
 	"size": [350, 150],
-	"at": [85, 3],
+	"at": [90, 0],
 	"inputs": [
 		{ "name": "Btn. 1" },
 		{ "name": "Btn. 2" }
@@ -13,7 +13,7 @@
 	"instances": [
 		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" }, "bind": { "output": "Btn. 1" } },
 		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 80], "props": { "keyboard": "2" }, "bind": { "output": "Btn. 2" } },
-		{ "id": "light_1", "component": "Led", "at": [330, 75], "bind": { "on": "Light" } }
+		{ "id": "light_1", "component": "Led", "at": [330, 80], "bind": { "on": "Light" } }
 	],
 	"nets": [],
 	"rows": [

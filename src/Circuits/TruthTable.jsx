@@ -1,11 +1,32 @@
 import classNames from "classnames";
 
-export const TruthTable = ({ children, x, y }) => {
+import { gridLength } from "./grid"
+
+export const ROW_HEIGHT = 30
+const MIN_COLUMN = 40
+const CHARACTER_WIDTH = 8
+const COLUMN_PADDING = 22
+
+// A column is a whole number of grid steps wide, however long its name is.
+export const columnWidth = ({ name }) => gridLength(Math.max(MIN_COLUMN, name.length * CHARACTER_WIDTH + COLUMN_PADDING))
+
+// Sets every column's width, which `table-layout: fixed` then holds to.
+export const TruthTableColumns = ({ columns }) => {
+	return <colgroup>
+		{columns.map((column, i) => <col key={i} style={{ width: columnWidth(column) }} />)}
+	</colgroup>
+}
+
+export const tableWidth = (columns) => columns.reduce((sum, column) => sum + columnWidth(column), 0)
+
+export const TruthTable = ({ children, x, y, columns }) => {
 	return <table style={{
 	  "position": "absolute",
 	  "top": `${y}px`,
 	  "left": `${x}px`,
+	  "width": tableWidth(columns),
 	}}>
+		<TruthTableColumns columns={columns} />
 		{children}
 	</table>
 }

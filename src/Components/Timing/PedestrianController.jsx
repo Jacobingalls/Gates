@@ -7,12 +7,12 @@ import { Block, BlockLabel } from "../Block"
 import { PHASE_TITLES, pedestrianOutputs, pressPedestrian, startPedestrian, stepPedestrian } from "./pedestrian"
 
 const WIDTH = 230
-const FIRST_PIN = 25
+const FIRST_PIN = 20
 const PIN_SPACING = 20
 const OUTPUT_COUNT = 10
-const BOTTOM_ROOM = 15
+const BOTTOM_ROOM = 20
 const HEIGHT = FIRST_PIN + PIN_SPACING * (OUTPUT_COUNT - 1) + BOTTOM_ROOM
-const STATE_DROP = 36
+const STATE_DROP = 40
 
 const pinY = (i) => FIRST_PIN + i * PIN_SPACING
 

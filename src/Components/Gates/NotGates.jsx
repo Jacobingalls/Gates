@@ -9,11 +9,11 @@ export const NotGate = ({x, y, input, output}) => {
 	return <g transform={`translate(${x},${y})`}>
 		{<path 
 		  class="gate"
-		  d="M0,5 l40,20 l-40,20 z"
+		  d="M0,0 l40,20 l-40,20 z"
 		/>}
 		<circle 
 			class="gate"
-			cx="40" cy="25" r="5"
+			cx="45" cy="20" r="5"
 		/>
 		
 		{/* <rect 

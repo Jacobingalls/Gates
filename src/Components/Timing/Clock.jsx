@@ -13,11 +13,11 @@ const RESTART_GAP = 30
 export const ALWAYS_ON = "always"
 
 const WIDTH = 140
-const HEIGHT = 50
+const HEIGHT = 40
 const CHAR_WIDTH = 7
 const SIDE_ROOM = 20
 const WIDTH_STEP = 10
-const PIN_Y = 25
+const PIN_Y = 20
 const PIN_SPACING = 20
 
 const rateText = (frequency, duty) => `${frequency} Hz, ${duty}%`

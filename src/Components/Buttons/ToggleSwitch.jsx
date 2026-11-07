@@ -16,11 +16,7 @@ export const ToggleSwitch = ({x, y, output, keyboard}) => {
 	/>
 	<div className="slider">
 	  <div className="gradient"></div>
-	  <div className="handles">
-		<div className="handle"></div>
-		<div className="handle"></div>
-		<div className="handle"></div>
-	  </div>
+	  <div className="key">{keyboard}</div>
 	</div>
   </label>
 }

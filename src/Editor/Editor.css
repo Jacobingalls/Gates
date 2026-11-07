@@ -269,8 +269,10 @@
 	border: none;
 	border-radius: 0;
 	background-color: #1a1a24;
-	background-image: radial-gradient(rgba(255, 255, 255, .13) 1px, transparent 1px);
-	background-size: 25px 25px;
+	background-image: radial-gradient(rgba(255, 255, 255, .11) 1px, transparent 1px);
+	background-size: 10px 10px;
+	/* Each dot is drawn in the middle of its tile, so this puts it on the corner, where the grid is. */
+	background-position: -5px -5px;
 	cursor: default;
 	touch-action: none;
 }
@@ -297,15 +299,15 @@
 	stroke-width: 1px;
 }
 
-.editor-rocker-half {
-	fill: #444;
-	stroke: #222;
-	stroke-width: 1px;
-}
 
 .circuit text.editor-button-label {
 	fill: #fff;
 	font-size: 24px;
+}
+
+.circuit text.editor-switch-label {
+	fill: #fff;
+	font-size: 18px;
 }
 
 .editor-frame {

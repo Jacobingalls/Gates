@@ -4,6 +4,8 @@ import classNames from "classnames";
 
 export const SEVEN_SEGMENT_SIZE = [50, 80]
 export const SMALL_SCALE = .5
+// Half a digit is too narrow for the grid, so a small one is a little wider than that.
+export const SMALL_SEVEN_SEGMENT_SIZE = [30, 40]
 const POINT = { cx: 46, cy: 73, r: 3 }
 
 // Segments a to g, clockwise from the top, with g across the middle.
@@ -27,8 +29,11 @@ export const hexSegments = (value) => SEGMENTS.map((_, i) => ((HEX_DIGITS[value]
 // `color` lights the segments in place of the usual red. `point` is the decimal point, which
 // isn't drawn at all if it's left out, for faces that have no use for one.
 export const SevenSegment = ({x, y, segments, scale = 1, color, point}) => {
+	const width = scale === SMALL_SCALE ? SMALL_SEVEN_SEGMENT_SIZE[0] / SMALL_SCALE : SEVEN_SEGMENT_SIZE[0]
+	
 	return <g transform={`translate(${x},${y}) scale(${scale})`}>
-		<rect className="seven-segment" width={SEVEN_SEGMENT_SIZE[0]} height={SEVEN_SEGMENT_SIZE[1]} rx="4" />
+		<rect className="seven-segment" width={width} height={SEVEN_SEGMENT_SIZE[1]} rx="4" />
+		<g transform={`translate(${(width - SEVEN_SEGMENT_SIZE[0]) / 2},0)`}>
 		{SEGMENTS.map((d, i) => {
 			const lit = segments[i] === true
 			return <path
@@ -43,5 +48,6 @@ export const SevenSegment = ({x, y, segments, scale = 1, color, point}) => {
 			className={classNames("segment", {"on": point})}
 			style={point && color !== undefined ? { fill: color } : undefined}
 		/>}
+		</g>
 	</g>
 }

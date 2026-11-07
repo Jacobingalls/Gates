@@ -6,13 +6,14 @@ const CLOCK_AT = [MARGIN, MARGIN]
 const COUNTER_X = 200
 const BCD_X = 400
 const ROW_GAP = 50
-const DIGIT_SPACING = 75
+const DIGIT_SPACING = 70
 const DIGIT_PIN_Y = 40
 const CHANNEL = 10
-const TICK_RISE = 25
+const TICK_RISE = 20
 const ROW_INSET = 30
 const DEMO_FREQUENCY = 20
 const MAX_DEMO_BITS = 53
+const PIN_Y = 20
 
 // A Number Display, zoomed in: a BCD block with one Seven Segment per digit, showing
 // each digit's bus as a hex number. A clock and counter stand in for what's driving it.
@@ -37,8 +38,8 @@ export const zoomedDisplay = (instance) => {
 	]
 	
 	const nets = [
-		{ id: "clock_line", connect: ["clock.output", "counter.clk"], route: [[[CLOCK_AT[0] + 140, MARGIN + 25], [COUNTER_X, counterY + 25]]] },
-		{ id: "value", width, connect: ["counter.setValue", "bcd.value"], route: [[[COUNTER_X + 140, counterY + 25], [BCD_X, bcdY + 25]]] },
+		{ id: "clock_line", connect: ["clock.output", "counter.clk"], route: [[[CLOCK_AT[0] + 140, MARGIN + PIN_Y], [COUNTER_X, counterY + PIN_Y]]] },
+		{ id: "value", width, connect: ["counter.setValue", "bcd.value"], route: [[[COUNTER_X + 140, counterY + PIN_Y], [BCD_X, bcdY + PIN_Y]]] },
 		...Array.from({ length: digits }, (_, digit) => {
 			const start = [BCD_X + bcd.size[0], bcdY + bcd.pins[`setDigit${digit}`].at[1]]
 			const channelX = placeX(digit) - CHANNEL

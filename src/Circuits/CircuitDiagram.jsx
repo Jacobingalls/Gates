@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { Circuit, CircuitSVG } from "./Circuit"
+import { GRID, snap } from "./grid"
 import { PARTS, PartStubs, PlacedPart, bitOf, boxOf, extentOf, labelText, outputProps, splitBus, withBit } from "./parts"
 import { busTick, netPath, tapLeavesRight } from "./wirePath"
 import { Wire, Bus, BusLabel, Junction } from "../Components/Wires"
@@ -47,26 +48,23 @@ export const BackdropLayer = ({ backdrops }) => (backdrops ?? []).map(({ id, at,
 	/>
 })
 
-const TAG_DROP = 16
-const TAG_GAP = 5
-
-// Text that goes with a part. Unless the part picks a side, it goes beside the ones that
-// always stay upright, and below the rest.
+// Text that goes with a part sits a grid step off its box. Beside a part it's on the grid row
+// nearest the part's middle, so the tags of neighbouring parts line up. Unless the part picks a
+// side, it goes beside the ones that always stay upright, and below the rest.
 export const PartTag = ({ instance, className, children }) => {
 	const [left, top, right, bottom] = boxOf(instance)
-	const { faceHeight = bottom - top } = PARTS[instance.component]
-	const [middleX, middleY] = [(left + right) / 2, top + faceHeight / 2]
+	const [middleX, middleY] = [(left + right) / 2, snap((top + bottom) / 2)]
 	
 	const places = {
-		top: ["middle", middleX, top - TAG_GAP * 2],
-		bottom: ["middle", middleX, bottom + TAG_DROP],
-		left: ["end", left - TAG_GAP * 2, middleY, "central"],
-		right: ["start", right + TAG_GAP * 2, middleY, "central"],
+		top: ["middle", middleX, top - GRID],
+		bottom: ["middle", middleX, bottom + GRID],
+		left: ["end", left - GRID, middleY],
+		right: ["start", right + GRID, middleY],
 	}
 	const place = places[instance.labelSide]
-		?? (isHtmlPart(instance) ? ["start", right + TAG_GAP, middleY, "central"] : ["middle", middleX, extentOf(instance)[3] + TAG_DROP])
+		?? (isHtmlPart(instance) ? places.right : ["middle", middleX, extentOf(instance)[3] + GRID])
 	
-	return <text className={className} text-anchor={place[0]} dominant-baseline={place[3]} x={place[1]} y={place[2]}>{children}</text>
+	return <text className={className} text-anchor={place[0]} dominant-baseline="central" x={place[1]} y={place[2]}>{children}</text>
 }
 
 export const LabelLayer = ({ circuit }) => {

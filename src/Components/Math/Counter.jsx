@@ -39,9 +39,9 @@ export const Counter = ({x, y, clk, reset, setValue, setOverflow, modulo}) => {
 	}, [clk, reset, nextValue, currentValue]);
 	
 	return <Block title="Counter" x={x} y={y} width={140} height={60}>
-		<BlockLabel x={10} y={25} on={clk}>CLK</BlockLabel>
-		<BlockLabel x={10} y={45} on={reset}>RST</BlockLabel>
-		<BlockLabel x={130} y={25} align="end" on={currentValue}>Value ({ currentValue })</BlockLabel>
-		<BlockLabel x={130} y={45} align="end" on={overflowing}>OVF</BlockLabel>
+		<BlockLabel x={10} y={20} on={clk}>CLK</BlockLabel>
+		<BlockLabel x={10} y={40} on={reset}>RST</BlockLabel>
+		<BlockLabel x={130} y={20} align="end" on={currentValue}>Value ({ currentValue })</BlockLabel>
+		<BlockLabel x={130} y={40} align="end" on={overflowing}>OVF</BlockLabel>
 	</Block>
 }

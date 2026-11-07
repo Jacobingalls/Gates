@@ -1,10 +1,6 @@
 import { shownColumns } from "../Circuits/parts"
+import { ROW_HEIGHT, tableWidth } from "../Circuits/TruthTable"
 import { combinations } from "./combinations"
-
-const ROW_HEIGHT = 29
-const MIN_COLUMN = 45
-const CHARACTER_WIDTH = 8
-const COLUMN_PADDING = 22
 
 // One row per input combination in counting order, keeping any outputs that apply.
 export const fullRows = (table, source = table) => {
@@ -21,13 +17,13 @@ export const blankTable = () => {
 		format: 1,
 		kind: "truthTable",
 		size: [350, 150],
-		at: [85, 3],
+		at: [90, 0],
 		inputs: [{ name: "a" }, { name: "b" }],
 		outputs: [{ name: "y" }],
 		instances: [
 			{ id: "button_1", component: "KeyboardButton", at: [10, 30], props: { keyboard: "1" }, bind: { output: "a" } },
 			{ id: "button_2", component: "KeyboardButton", at: [10, 80], props: { keyboard: "2" }, bind: { output: "b" } },
-			{ id: "light_1", component: "Led", at: [290, 75], bind: { on: "y" } },
+			{ id: "light_1", component: "Led", at: [290, 70], bind: { on: "y" } },
 		],
 		nets: [],
 		rows: [],
@@ -43,12 +39,9 @@ export const toggleCell = (table, row, column) => ({
 })
 
 export const tableBox = (table) => {
-	const width = shownColumns(table).reduce((sum, { name }) => {
-		return sum + Math.max(MIN_COLUMN, name.length * CHARACTER_WIDTH + COLUMN_PADDING)
-	}, 0)
 	const headers = [...table.inputs, ...table.outputs].some(({ bus }) => bus !== undefined) ? 2 : 1
 	const [x, y] = table.at
-	return [x, y, x + width, y + (table.rows.length + headers) * ROW_HEIGHT]
+	return [x, y, x + tableWidth(shownColumns(table)), y + (table.rows.length + headers) * ROW_HEIGHT]
 }
 
 export const checkTable = (table) => {

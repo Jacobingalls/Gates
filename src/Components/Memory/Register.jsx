@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Block, BlockLabel } from "../Block"
+import { gridLength } from "../../Circuits/grid"
 import { digitCount } from "../Math/Bcd"
 
 const MIN_WIDTH = 120
@@ -10,7 +11,7 @@ const HEIGHT = 80
 const PIN_YS = { d: 20, clk: 40, reset: 60 }
 
 export const registerShape = ({ width }) => {
-	const blockWidth = Math.max(MIN_WIDTH, LABEL_ROOM + digitCount(width) * DIGIT_WIDTH)
+	const blockWidth = gridLength(Math.max(MIN_WIDTH, LABEL_ROOM + digitCount(width) * DIGIT_WIDTH))
 	
 	return {
 		size: [blockWidth, HEIGHT],

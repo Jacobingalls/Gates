@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { Block, BlockLabel } from "../Block"
 
 const DIGIT_SPACING = 20
-const FIRST_DIGIT = 25
-const BCD_SIZE = [120, 50]
+const FIRST_DIGIT = 20
+const BCD_SIZE = [120, 40]
 
 // How many decimal digits the largest number of this many bits needs.
 export const digitCount = (width) => `${2n ** BigInt(width) - 1n}`.length

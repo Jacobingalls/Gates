@@ -4,7 +4,7 @@ import { Block, BlockLabel } from "../Block"
 
 const SIZE = [120, 80]
 const OUTPUT_YS = { less: 20, equal: 40, greater: 60 }
-const INPUT_YS = { a: 25, b: 55 }
+const INPUT_YS = { a: 20, b: 60 }
 
 const output = (y, label) => ({ at: [SIZE[0], y], dir: "out", label: () => label })
 const input = (y, width, label) => ({ at: [0, y], dir: "in", bus: true, width, label: () => label })

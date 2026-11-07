@@ -3,23 +3,23 @@
 	"kind": "circuit",
 	"size": [620, 250],
 	"instances": [
-		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 35], "props": { "keyboard": "1" } },
-		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 185], "props": { "keyboard": "2" } },
+		{ "id": "button_1", "component": "KeyboardButton", "at": [10, 30], "props": { "keyboard": "1" } },
+		{ "id": "button_2", "component": "KeyboardButton", "at": [10, 180], "props": { "keyboard": "2" } },
 		{ "id": "and_gate_1", "component": "AndGate", "at": [300, 30] },
 		{ "id": "and_gate_2", "component": "AndGate", "at": [300, 120] },
-		{ "id": "not_gate_1", "component": "NotGate", "at": [150, 25] },
+		{ "id": "not_gate_1", "component": "NotGate", "at": [150, 30] },
 		{ "id": "nor_gate_1", "component": "NorGate", "at": [450, 30] },
 		{ "id": "nor_gate_2", "component": "NorGate", "at": [450, 120] },
-		{ "id": "light_1", "component": "Led", "at": [600, 55] },
-		{ "id": "light_2", "component": "Led", "at": [600, 145] }
+		{ "id": "light_1", "component": "Led", "at": [600, 50] },
+		{ "id": "light_2", "component": "Led", "at": [600, 140] }
 	],
 	"nets": [
-		{ "id": "d", "connect": ["button_1.output", "and_gate_2.input1", "not_gate_1.input"], "route": [[[50, 50], [150, 50]], [[100, 50], [100, 140], [240, 140], { "hop": [260, 140] }, [310, 140]]] },
-		{ "id": "en", "connect": ["button_2.output", "and_gate_1.input2", "and_gate_2.input2"], "route": [[[50, 205], [250, 205], [250, 155], [300, 155]], [[250, 155], [250, 60], [300, 60]]] },
-		{ "id": "notD", "connect": ["and_gate_1.input1", "not_gate_1.output"], "route": [[[195, 50], [305, 50]]] },
-		{ "id": "w1", "connect": ["and_gate_1.output", "nor_gate_1.input1"], "route": [[[350, 55], [380, 55], [385, 50], [455, 50]]] },
-		{ "id": "w4", "connect": ["and_gate_2.output", "nor_gate_2.input2"], "route": [[[350, 145], [380, 145], [385, 150], [455, 150]]] },
-		{ "id": "w3", "connect": ["nor_gate_1.output", "nor_gate_2.input1", "light_1.on"], "route": [[[500, 55], [550, 55], [400, 140], [460, 140]], [[500, 55], [600, 55]]], "delay": 1 },
-		{ "id": "w2", "connect": ["nor_gate_1.input2", "nor_gate_2.output", "light_2.on"], "route": [[[500, 145], [550, 145], [400, 60], [460, 60]], [[500, 145], [600, 145]]] }
+		{ "id": "d", "connect": ["button_1.output", "and_gate_2.input1", "not_gate_1.input"], "route": [[[50, 50], [150, 50]], [[100, 50], [100, 130], [240, 130], { "hop": [260, 130] }, [310, 130]]] },
+		{ "id": "en", "connect": ["button_2.output", "and_gate_1.input2", "and_gate_2.input2"], "route": [[[50, 200], [250, 200], [250, 150], [310, 150]], [[250, 150], [250, 60], [310, 60]]] },
+		{ "id": "notD", "connect": ["and_gate_1.input1", "not_gate_1.output"], "route": [[[200, 50], [260, 50], [260, 40], [310, 40]]] },
+		{ "id": "w1", "connect": ["and_gate_1.output", "nor_gate_1.input1"], "route": [[[350, 50], [380, 50], [380, 40], [460, 40]]] },
+		{ "id": "w4", "connect": ["and_gate_2.output", "nor_gate_2.input2"], "route": [[[350, 140], [380, 140], [380, 150], [460, 150]]] },
+		{ "id": "w3", "connect": ["nor_gate_1.output", "nor_gate_2.input1", "light_1.on"], "route": [[[500, 50], [550, 50], [400, 130], [460, 130]], [[500, 50], [600, 50]]], "delay": 1 },
+		{ "id": "w2", "connect": ["nor_gate_1.input2", "nor_gate_2.output", "light_2.on"], "route": [[[500, 140], [550, 140], [400, 60], [460, 60]], [[500, 140], [600, 140]]] }
 	]
 }
